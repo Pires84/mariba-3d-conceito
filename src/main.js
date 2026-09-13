@@ -2,6 +2,7 @@ import './style.css'
 import * as THREE from 'three'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -83,8 +84,8 @@ document.querySelector('#app').innerHTML = `
           <div class="hero-object-label">
             <span>01</span>
             <p>
-              Protótipo 3D<br>
-              em desenvolvimento
+              Espeto 3D<br>
+              experiência interativa
             </p>
           </div>
 
@@ -160,14 +161,13 @@ renderer.setSize(
 renderer.outputColorSpace =
   THREE.SRGBColorSpace
 
+renderer.toneMapping =
+  THREE.ACESFilmicToneMapping
+
+renderer.toneMappingExposure = 1.25
+
 /* =========================================================
-   ESTRUTURA DO OBJETO
-
-   skewerRig:
-   controlado pelo scroll.
-
-   skewer:
-   recebe o movimento suave de flutuação.
+   RIG PRINCIPAL
 ========================================================= */
 
 const skewerRig = new THREE.Group()
@@ -180,108 +180,367 @@ scene.add(skewerRig)
    MATERIAIS
 ========================================================= */
 
-const rodMaterial =
+const metalMaterial =
   new THREE.MeshStandardMaterial({
-    color: 0x8c8178,
-    metalness: 0.9,
-    roughness: 0.25,
+    color: 0xa79b91,
+    metalness: 0.95,
+    roughness: 0.2,
   })
 
-const foodMaterial =
+const darkMetalMaterial =
   new THREE.MeshStandardMaterial({
-    color: 0xd65a20,
-    roughness: 0.55,
-    metalness: 0.05,
+    color: 0x39302c,
+    metalness: 0.82,
+    roughness: 0.3,
   })
 
-const handleMaterial =
+const meatMaterial =
+  new THREE.MeshPhysicalMaterial({
+    color: 0xa63e20,
+    roughness: 0.46,
+    metalness: 0.02,
+    clearcoat: 0.18,
+    clearcoatRoughness: 0.45,
+  })
+
+const meatDarkMaterial =
+  new THREE.MeshPhysicalMaterial({
+    color: 0x7c2918,
+    roughness: 0.52,
+    metalness: 0.02,
+    clearcoat: 0.12,
+  })
+
+const toastedMaterial =
+  new THREE.MeshPhysicalMaterial({
+    color: 0xc75a25,
+    roughness: 0.48,
+    metalness: 0.01,
+    clearcoat: 0.15,
+  })
+
+const onionMaterial =
   new THREE.MeshStandardMaterial({
-    color: 0x5b2c18,
-    roughness: 0.75,
+    color: 0xe0a06e,
+    roughness: 0.72,
+  })
+
+const grillMaterial =
+  new THREE.MeshStandardMaterial({
+    color: 0x281510,
+    roughness: 0.95,
+  })
+
+const woodMaterial =
+  new THREE.MeshStandardMaterial({
+    color: 0x6b351d,
+    roughness: 0.78,
+  })
+
+const woodDarkMaterial =
+  new THREE.MeshStandardMaterial({
+    color: 0x3f2014,
+    roughness: 0.82,
   })
 
 /* =========================================================
-   HASTE
+   HASTE METÁLICA
 ========================================================= */
 
 const rodGeometry =
   new THREE.CylinderGeometry(
-    0.035,
-    0.035,
-    5.4,
-    16
+    0.032,
+    0.032,
+    6.4,
+    20
   )
 
-const rod = new THREE.Mesh(
-  rodGeometry,
-  rodMaterial
-)
+const rod =
+  new THREE.Mesh(
+    rodGeometry,
+    metalMaterial
+  )
 
 skewer.add(rod)
 
 /* =========================================================
-   PEDAÇOS PROVISÓRIOS DO ESPETO
+   PONTA DO ESPETO
 ========================================================= */
 
-const foodPositions = [
-  1.25,
-  0.55,
-  -0.15,
-  -0.85,
+const tipGeometry =
+  new THREE.ConeGeometry(
+    0.075,
+    0.55,
+    18
+  )
+
+const tip =
+  new THREE.Mesh(
+    tipGeometry,
+    metalMaterial
+  )
+
+tip.position.y = 3.45
+
+skewer.add(tip)
+
+/* =========================================================
+   FUNÇÃO PARA CRIAR PEDAÇOS DE CARNE
+========================================================= */
+
+function createMeatPiece({
+  y,
+  material,
+  rotationY,
+  rotationZ,
+  scaleX = 1,
+  scaleY = 1,
+  scaleZ = 1,
+  grill = true,
+}) {
+
+  const group =
+    new THREE.Group()
+
+  const geometry =
+    new RoundedBoxGeometry(
+      0.95,
+      0.62,
+      0.78,
+      5,
+      0.16
+    )
+
+  const meat =
+    new THREE.Mesh(
+      geometry,
+      material
+    )
+
+  meat.scale.set(
+    scaleX,
+    scaleY,
+    scaleZ
+  )
+
+  group.add(meat)
+
+  if (grill) {
+
+    const markGeometry =
+      new RoundedBoxGeometry(
+        0.54,
+        0.045,
+        0.025,
+        2,
+        0.015
+      )
+
+    for (let i = -1; i <= 1; i++) {
+
+      const mark =
+        new THREE.Mesh(
+          markGeometry,
+          grillMaterial
+        )
+
+      mark.position.set(
+        0,
+        i * 0.16,
+        0.405 * scaleZ
+      )
+
+      mark.rotation.z = -0.45
+
+      group.add(mark)
+    }
+  }
+
+  group.position.y = y
+
+  group.rotation.y =
+    rotationY
+
+  group.rotation.z =
+    rotationZ
+
+  return group
+}
+
+/* =========================================================
+   PEDAÇOS DO ESPETO
+========================================================= */
+
+const meatPieces = [
+
+  createMeatPiece({
+    y: 1.55,
+    material: meatMaterial,
+    rotationY: 0.15,
+    rotationZ: -0.08,
+    scaleX: 1.03,
+    scaleY: 0.95,
+  }),
+
+  createMeatPiece({
+    y: 0.78,
+    material: toastedMaterial,
+    rotationY: -0.3,
+    rotationZ: 0.12,
+    scaleX: 0.92,
+    scaleY: 1.05,
+    scaleZ: 0.96,
+  }),
+
+  createMeatPiece({
+    y: 0,
+    material: meatDarkMaterial,
+    rotationY: 0.38,
+    rotationZ: -0.12,
+    scaleX: 1.05,
+    scaleY: 0.9,
+  }),
+
+  createMeatPiece({
+    y: -0.78,
+    material: meatMaterial,
+    rotationY: -0.15,
+    rotationZ: 0.13,
+    scaleX: 0.94,
+    scaleY: 1.02,
+  }),
+
+  createMeatPiece({
+    y: -1.55,
+    material: toastedMaterial,
+    rotationY: 0.3,
+    rotationZ: -0.1,
+    scaleX: 1.02,
+    scaleY: 0.92,
+  }),
+
 ]
 
-foodPositions.forEach(
-  (position, index) => {
-
-    const geometry =
-      new THREE.BoxGeometry(
-        0.78,
-        0.55,
-        0.72
-      )
-
-    const piece =
-      new THREE.Mesh(
-        geometry,
-        foodMaterial
-      )
-
-    piece.position.y = position
-
-    piece.rotation.y =
-      index * 0.35
-
-    piece.rotation.z =
-      index * 0.12
-
-    skewer.add(piece)
-  }
+meatPieces.forEach(
+  piece => skewer.add(piece)
 )
 
 /* =========================================================
-   CABO
+   CEBOLA ENTRE ALGUNS PEDAÇOS
+========================================================= */
+
+function createOnionSlice(y, rotation) {
+
+  const geometry =
+    new RoundedBoxGeometry(
+      0.82,
+      0.11,
+      0.72,
+      4,
+      0.05
+    )
+
+  const onion =
+    new THREE.Mesh(
+      geometry,
+      onionMaterial
+    )
+
+  onion.position.y = y
+  onion.rotation.y = rotation
+
+  return onion
+}
+
+skewer.add(
+  createOnionSlice(
+    1.16,
+    0.2
+  )
+)
+
+skewer.add(
+  createOnionSlice(
+    -0.39,
+    -0.25
+  )
+)
+
+skewer.add(
+  createOnionSlice(
+    -1.16,
+    0.35
+  )
+)
+
+/* =========================================================
+   CABO DE MADEIRA
 ========================================================= */
 
 const handleGeometry =
   new THREE.CylinderGeometry(
-    0.16,
-    0.2,
-    1.4,
-    24
+    0.18,
+    0.23,
+    1.55,
+    32
   )
 
 const handle =
   new THREE.Mesh(
     handleGeometry,
-    handleMaterial
+    woodMaterial
   )
 
-handle.position.y = -3
+handle.position.y = -3.25
 
 skewer.add(handle)
 
 /* =========================================================
-   POSIÇÃO INICIAL
+   DETALHES DO CABO
+========================================================= */
+
+const handleBottomGeometry =
+  new THREE.SphereGeometry(
+    0.23,
+    24,
+    16
+  )
+
+const handleBottom =
+  new THREE.Mesh(
+    handleBottomGeometry,
+    woodDarkMaterial
+  )
+
+handleBottom.scale.y = 0.75
+handleBottom.position.y = -4.02
+
+skewer.add(handleBottom)
+
+/* =========================================================
+   ANEL METÁLICO ENTRE CABO E HASTE
+========================================================= */
+
+const ferruleGeometry =
+  new THREE.CylinderGeometry(
+    0.19,
+    0.19,
+    0.22,
+    28
+  )
+
+const ferrule =
+  new THREE.Mesh(
+    ferruleGeometry,
+    darkMetalMaterial
+  )
+
+ferrule.position.y = -2.43
+
+skewer.add(ferrule)
+
+/* =========================================================
+   POSIÇÃO E ROTAÇÃO INICIAIS
 ========================================================= */
 
 skewer.rotation.z = -0.55
@@ -299,8 +558,8 @@ skewerRig.position.set(
 
 const ambientLight =
   new THREE.AmbientLight(
-    0xffd7bb,
-    0.6
+    0xffd8bf,
+    0.72
   )
 
 scene.add(ambientLight)
@@ -308,22 +567,22 @@ scene.add(ambientLight)
 const fireLight =
   new THREE.PointLight(
     0xff5a16,
-    45,
-    12
+    58,
+    13
   )
 
 fireLight.position.set(
-  2,
-  -2.5,
-  3
+  2.2,
+  -2.6,
+  3.2
 )
 
 scene.add(fireLight)
 
 const rimLight =
   new THREE.DirectionalLight(
-    0xffbd73,
-    2.4
+    0xffbf78,
+    3
   )
 
 rimLight.position.set(
@@ -334,11 +593,26 @@ rimLight.position.set(
 
 scene.add(rimLight)
 
+const warmFillLight =
+  new THREE.PointLight(
+    0xffa85c,
+    12,
+    10
+  )
+
+warmFillLight.position.set(
+  -3,
+  1,
+  1
+)
+
+scene.add(warmFillLight)
+
 /* =========================================================
    PARTÍCULAS / BRASAS
 ========================================================= */
 
-const particleCount = 110
+const particleCount = 140
 
 const positions =
   new Float32Array(
@@ -350,6 +624,7 @@ for (
   i < particleCount;
   i++
 ) {
+
   positions[i * 3] =
     (Math.random() - 0.5) * 12
 
@@ -374,9 +649,9 @@ particlesGeometry.setAttribute(
 const particlesMaterial =
   new THREE.PointsMaterial({
     color: 0xff6a1a,
-    size: 0.035,
+    size: 0.04,
     transparent: true,
-    opacity: 0.75,
+    opacity: 0.78,
   })
 
 const particles =
@@ -389,29 +664,38 @@ scene.add(particles)
 
 /* =========================================================
    MOVIMENTO CONTÍNUO
-
-   Este movimento acontece mesmo quando
-   o visitante não está rolando a página.
 ========================================================= */
 
 const clock = new THREE.Clock()
 
 function animate() {
+
   const elapsed =
     clock.getElapsedTime()
 
   skewer.rotation.y =
     Math.sin(
-      elapsed * 0.45
-    ) * 0.25
+      elapsed * 0.42
+    ) * 0.28
 
   skewer.position.y =
     Math.sin(
-      elapsed * 0.8
-    ) * 0.12
+      elapsed * 0.75
+    ) * 0.1
 
   particles.rotation.y =
     elapsed * 0.015
+
+  particles.rotation.z =
+    Math.sin(
+      elapsed * 0.1
+    ) * 0.04
+
+  fireLight.intensity =
+    58 +
+    Math.sin(
+      elapsed * 3.2
+    ) * 4
 
   renderer.render(
     scene,
@@ -427,8 +711,6 @@ animate()
 
 /* =========================================================
    GSAP + SCROLLTRIGGER
-
-   Agora a rolagem controla o "rig" inteiro.
 ========================================================= */
 
 const motion =
@@ -487,7 +769,7 @@ motion.add(
       .to(
         fireLight,
         {
-          intensity: 80,
+          intensity: 92,
           duration: 1,
         },
         0
@@ -535,9 +817,6 @@ motion.add(
 
 /* =========================================================
    MOBILE
-
-   Movimento mais leve para preservar desempenho
-   e facilitar a leitura.
 ========================================================= */
 
 motion.add(
@@ -604,6 +883,7 @@ gsap.from(
 ========================================================= */
 
 function handleResize() {
+
   const width =
     window.innerWidth
 
@@ -628,13 +908,16 @@ function handleResize() {
   )
 
   if (width < 800) {
+
     skewerRig.position.x = 0.8
     skewerRig.position.y = -0.8
 
     skewerRig.scale.setScalar(
       0.72
     )
+
   } else {
+
     skewerRig.position.x = 1.8
     skewerRig.position.y = 0.15
 

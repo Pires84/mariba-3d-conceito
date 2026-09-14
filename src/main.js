@@ -12,6 +12,286 @@ gsap.registerPlugin(ScrollTrigger)
 ========================================================= */
 
 document.querySelector('#app').innerHTML = `
+  <style>
+
+    /* ======================================================
+       SEGUNDA CENA — INTERAÇÃO
+    ====================================================== */
+
+    .menu-experience {
+      margin-top: 56px;
+
+      display: grid;
+
+      gap: 42px;
+    }
+
+    .menu-controls {
+      display: flex;
+
+      flex-direction: column;
+
+      gap: 0;
+
+      border-top:
+        1px solid
+        rgba(246, 235, 221, 0.14);
+    }
+
+    .menu-option {
+      width: 100%;
+
+      display: flex;
+
+      align-items: center;
+      justify-content: space-between;
+
+      gap: 20px;
+
+      padding: 22px 0;
+
+      border: 0;
+
+      border-bottom:
+        1px solid
+        rgba(246, 235, 221, 0.14);
+
+      background: transparent;
+
+      color:
+        rgba(246, 235, 221, 0.42);
+
+      cursor: pointer;
+
+      font-family:
+        'Bebas Neue',
+        sans-serif;
+
+      font-size:
+        clamp(
+          2rem,
+          6vw,
+          3.8rem
+        );
+
+      text-align: left;
+
+      transition:
+        color 0.3s ease,
+        padding-left 0.3s ease;
+    }
+
+    .menu-option span:first-child {
+      transition:
+        transform 0.3s ease;
+    }
+
+    .menu-option-number {
+      font-family:
+        'Inter',
+        sans-serif;
+
+      font-size:
+        0.68rem;
+
+      font-weight: 700;
+
+      letter-spacing:
+        0.18em;
+
+      color:
+        rgba(246, 235, 221, 0.28);
+    }
+
+    .menu-option:hover,
+    .menu-option.is-active {
+      color:
+        var(--orange);
+    }
+
+    .menu-option:hover span:first-child,
+    .menu-option.is-active span:first-child {
+      transform:
+        translateX(10px);
+    }
+
+    .menu-option.is-active {
+      padding-left: 4px;
+    }
+
+    .menu-showcase {
+      position: relative;
+
+      min-height: 470px;
+
+      overflow: hidden;
+
+      border-radius: 14px;
+
+      background:
+        #120c09;
+    }
+
+    .menu-showcase::after {
+      content: '';
+
+      position: absolute;
+
+      inset: 0;
+
+      pointer-events: none;
+
+      background:
+        linear-gradient(
+          to top,
+          rgba(15, 11, 9, 0.88) 0%,
+          rgba(15, 11, 9, 0.16) 46%,
+          transparent 72%
+        );
+    }
+
+    .menu-showcase img {
+      width: 100%;
+      height: 100%;
+
+      position: absolute;
+
+      inset: 0;
+
+      display: block;
+
+      object-fit: cover;
+
+      transform:
+        scale(1.04);
+
+      will-change:
+        transform,
+        opacity;
+    }
+
+    .menu-showcase-content {
+      position: absolute;
+
+      z-index: 2;
+
+      left: 28px;
+      right: 28px;
+      bottom: 28px;
+    }
+
+    .menu-showcase-kicker {
+      margin-bottom: 10px;
+
+      color:
+        var(--orange);
+
+      font-size:
+        0.66rem;
+
+      font-weight: 700;
+
+      letter-spacing:
+        0.18em;
+
+      text-transform:
+        uppercase;
+    }
+
+    .menu-showcase-title {
+      margin-bottom: 10px;
+
+      font-family:
+        'Bebas Neue',
+        sans-serif;
+
+      font-size:
+        clamp(
+          2.8rem,
+          7vw,
+          4.8rem
+        );
+
+      line-height:
+        0.9;
+
+      color:
+        var(--cream);
+
+      text-transform:
+        uppercase;
+    }
+
+    .menu-showcase-description {
+      max-width: 490px;
+
+      color:
+        rgba(246, 235, 221, 0.72);
+
+      font-size:
+        0.9rem;
+
+      line-height:
+        1.65;
+    }
+
+    .menu-status {
+      margin-top: 18px;
+
+      color:
+        rgba(246, 235, 221, 0.38);
+
+      font-size:
+        0.68rem;
+
+      letter-spacing:
+        0.12em;
+
+      text-transform:
+        uppercase;
+    }
+
+    @media (min-width: 900px) {
+
+      .menu-experience {
+        grid-template-columns:
+          0.8fr 1.2fr;
+
+        align-items:
+          stretch;
+
+        gap: 72px;
+      }
+
+      .menu-showcase {
+        min-height: 600px;
+      }
+
+      .menu-showcase-content {
+        left: 38px;
+        right: 38px;
+        bottom: 36px;
+      }
+    }
+
+    @media (max-width: 799px) {
+
+      .menu-showcase {
+        min-height: 440px;
+      }
+
+      .menu-option {
+        font-size:
+          clamp(
+            2.4rem,
+            12vw,
+            4rem
+          );
+      }
+    }
+
+  </style>
+
   <div class="experience">
 
     <header class="site-header">
@@ -63,6 +343,10 @@ document.querySelector('#app').innerHTML = `
 
     <main>
 
+      <!-- =================================================
+           HERO
+      ================================================== -->
+
       <section class="hero">
 
         <canvas
@@ -71,8 +355,6 @@ document.querySelector('#app').innerHTML = `
         ></canvas>
 
         <div class="hero-glow"></div>
-
-        <!-- FOTO REAL -->
 
         <div
           id="product-stage"
@@ -170,8 +452,6 @@ document.querySelector('#app').innerHTML = `
 
         </div>
 
-        <!-- TEXTO -->
-
         <div class="container hero-content">
 
           <div class="hero-copy">
@@ -238,8 +518,6 @@ document.querySelector('#app').innerHTML = `
 
         </div>
 
-        <!-- TRANSIÇÃO SUAVE -->
-
         <div
           id="scene-transition"
           style="
@@ -269,6 +547,11 @@ document.querySelector('#app').innerHTML = `
 
       </section>
 
+
+      <!-- =================================================
+           SEGUNDA CENA
+      ================================================== -->
+
       <section
         class="concept-section"
         id="cardapio"
@@ -293,11 +576,118 @@ document.querySelector('#app').innerHTML = `
           </h2>
 
           <p>
-            Fotografia real combinada com profundidade,
-            movimento, brasas e iluminação para criar
-            impacto visual sem transformar a comida
-            em uma ilustração artificial.
+            Escolha o clima da sua noite.
+            A experiência muda sem sair da página.
           </p>
+
+          <div
+            class="menu-experience"
+            id="experiencia"
+          >
+
+            <!-- OPÇÕES -->
+
+            <div>
+
+              <div
+                class="menu-controls"
+                role="group"
+                aria-label="Categorias em destaque"
+              >
+
+                <button
+                  class="menu-option is-active"
+                  type="button"
+                  data-category="espeto"
+                  aria-pressed="true"
+                >
+
+                  <span>
+                    Espetinhos
+                  </span>
+
+                  <span
+                    class="menu-option-number"
+                  >
+                    01
+                  </span>
+
+                </button>
+
+                <button
+                  class="menu-option"
+                  type="button"
+                  data-category="chopp"
+                  aria-pressed="false"
+                >
+
+                  <span>
+                    Chopp
+                  </span>
+
+                  <span
+                    class="menu-option-number"
+                  >
+                    02
+                  </span>
+
+                </button>
+
+              </div>
+
+              <p class="menu-status">
+                Toque ou clique para mudar a cena
+              </p>
+
+            </div>
+
+
+            <!-- IMAGEM -->
+
+            <div
+              class="menu-showcase"
+              id="menu-showcase"
+            >
+
+              <img
+                id="menu-image"
+                src="/images/espeto-real.jpg"
+                alt="Espetos assados na brasa"
+              >
+
+              <div
+                class="menu-showcase-content"
+                id="menu-copy"
+              >
+
+                <p
+                  class="menu-showcase-kicker"
+                  id="menu-kicker"
+                >
+                  NA BRASA
+                </p>
+
+                <h3
+                  class="menu-showcase-title"
+                  id="menu-title"
+                >
+                  Espetinhos
+                </h3>
+
+                <p
+                  class="menu-showcase-description"
+                  id="menu-description"
+                >
+                  O fogo continua como protagonista:
+                  uma apresentação visual para destacar
+                  os espetinhos de forma direta e apetitosa.
+                </p>
+
+              </div>
+
+            </div>
+
+          </div>
 
         </div>
 
@@ -309,7 +699,7 @@ document.querySelector('#app').innerHTML = `
 `
 
 /* =========================================================
-   THREE.JS
+   THREE.JS — BRASAS DISCRETAS
 ========================================================= */
 
 const canvas =
@@ -334,10 +724,6 @@ camera.position.set(
   0,
   8
 )
-
-/* =========================================================
-   RENDERER
-========================================================= */
 
 const renderer =
   new THREE.WebGLRenderer({
@@ -368,7 +754,7 @@ renderer.toneMappingExposure =
   1.05
 
 /* =========================================================
-   TEXTURA DAS BRASAS
+   TEXTURA DE BRASA
 ========================================================= */
 
 function createEmberTexture() {
@@ -444,10 +830,6 @@ function createEmberTexture() {
 const emberTexture =
   createEmberTexture()
 
-/* =========================================================
-   CAMPO DE BRASAS
-========================================================= */
-
 function createEmberField({
   count,
   width,
@@ -475,25 +857,19 @@ function createEmberField({
     i++
   ) {
 
-    positions[
-      i * 3
-    ] =
+    positions[i * 3] =
       (
         Math.random() -
         0.5
       ) * width
 
-    positions[
-      i * 3 + 1
-    ] =
+    positions[i * 3 + 1] =
       (
         Math.random() -
         0.5
       ) * height
 
-    positions[
-      i * 3 + 2
-    ] =
+    positions[i * 3 + 2] =
       (
         Math.random() -
         0.5
@@ -511,15 +887,13 @@ function createEmberField({
   const geometry =
     new THREE.BufferGeometry()
 
-  const positionAttribute =
+  geometry.setAttribute(
+    'position',
+
     new THREE.BufferAttribute(
       positions,
       3
     )
-
-  geometry.setAttribute(
-    'position',
-    positionAttribute
   )
 
   const material =
@@ -565,10 +939,6 @@ function createEmberField({
     height,
   }
 }
-
-/* =========================================================
-   CAMADAS
-========================================================= */
 
 const farEmbers =
   createEmberField({
@@ -621,10 +991,6 @@ const foregroundEmbers =
     speedMax: 0.008,
   })
 
-/* =========================================================
-   MOVIMENTO DAS BRASAS
-========================================================= */
-
 function updateEmbers(
   field,
   delta
@@ -662,25 +1028,14 @@ function updateEmbers(
         i * 3 + 1
       ] =
         -height / 2
-
-      positions[
-        i * 3
-      ] +=
-        (
-          Math.random() -
-          0.5
-        ) * 0.8
     }
   }
 
-  geometry.attributes
+  geometry
+    .attributes
     .position
     .needsUpdate = true
 }
-
-/* =========================================================
-   ANIMAÇÃO
-========================================================= */
 
 const clock =
   new THREE.Clock()
@@ -736,15 +1091,11 @@ function animate() {
 animate()
 
 /* =========================================================
-   GSAP
+   HERO / SCROLL
 ========================================================= */
 
 const motion =
   gsap.matchMedia()
-
-/* =========================================================
-   DESKTOP
-========================================================= */
 
 motion.add(
 
@@ -756,11 +1107,8 @@ motion.add(
       '#product-photo',
       {
         rotateZ: 2.2,
-
         rotateY: -4,
-
         rotateX: 1,
-
         scale: 0.97,
       }
     )
@@ -796,7 +1144,6 @@ motion.add(
         '#product-stage',
         {
           right: '3%',
-
           top: '52%',
 
           width:
@@ -811,15 +1158,12 @@ motion.add(
         '#product-photo',
         {
           rotateZ: -1.5,
-
           rotateY: 6,
-
           rotateX: -1,
 
           scale: 1.13,
 
           x: -35,
-
           y: -8,
 
           duration: 1,
@@ -831,7 +1175,6 @@ motion.add(
         '.hero-copy',
         {
           y: -85,
-
           opacity: 0.035,
 
           duration: 0.8,
@@ -863,7 +1206,6 @@ motion.add(
         '.hero-glow',
         {
           scale: 2,
-
           opacity: 1,
 
           duration: 1,
@@ -903,10 +1245,6 @@ motion.add(
   }
 )
 
-/* =========================================================
-   MOBILE
-========================================================= */
-
 motion.add(
 
   '(max-width: 799px)',
@@ -917,9 +1255,7 @@ motion.add(
       '#product-stage',
       {
         width: '108vw',
-
         right: '-20%',
-
         top: '73%',
       }
     )
@@ -928,9 +1264,7 @@ motion.add(
       '#product-photo',
       {
         rotateZ: 0,
-
         rotateY: 0,
-
         scale: 0.94,
       }
     )
@@ -939,9 +1273,7 @@ motion.add(
       '#product-photo',
       {
         scale: 1.07,
-
         x: -10,
-
         y: -18,
 
         scrollTrigger: {
@@ -964,12 +1296,13 @@ motion.add(
 )
 
 /* =========================================================
-   SEGUNDA CENA
+   ENTRADA DA SEGUNDA CENA
 ========================================================= */
 
 gsap.from(
   '.concept-section .container',
   {
+
     y: 70,
 
     opacity: 0,
@@ -992,7 +1325,249 @@ gsap.from(
 )
 
 /* =========================================================
-   RESPONSIVIDADE
+   DADOS DA INTERAÇÃO
+========================================================= */
+
+const menuData = {
+
+  espeto: {
+
+    image:
+      '/images/espeto-real.jpg',
+
+    alt:
+      'Espetos assados na brasa',
+
+    kicker:
+      'NA BRASA',
+
+    title:
+      'Espetinhos',
+
+    description:
+      'O fogo continua como protagonista: uma apresentação visual para destacar os espetinhos de forma direta e apetitosa.',
+  },
+
+  chopp: {
+
+    image:
+      '/images/chopp-real.jpg',
+
+    alt:
+      'Copo de chopp gelado',
+
+    kicker:
+      'BEM GELADO',
+
+    title:
+      'Chopp',
+
+    description:
+      'O contraste da noite: depois do calor da brasa, a cena muda para destacar o chopp e a experiência de sentar e aproveitar.',
+  },
+}
+
+/* =========================================================
+   ELEMENTOS DA INTERAÇÃO
+========================================================= */
+
+const menuButtons =
+  document.querySelectorAll(
+    '.menu-option'
+  )
+
+const menuImage =
+  document.querySelector(
+    '#menu-image'
+  )
+
+const menuKicker =
+  document.querySelector(
+    '#menu-kicker'
+  )
+
+const menuTitle =
+  document.querySelector(
+    '#menu-title'
+  )
+
+const menuDescription =
+  document.querySelector(
+    '#menu-description'
+  )
+
+let activeCategory =
+  'espeto'
+
+let changingCategory =
+  false
+
+/* =========================================================
+   TROCA DE CENA
+========================================================= */
+
+function changeMenuScene(
+  category
+) {
+
+  if (
+    category === activeCategory ||
+    changingCategory
+  ) {
+    return
+  }
+
+  const data =
+    menuData[category]
+
+  if (!data) {
+    return
+  }
+
+  changingCategory =
+    true
+
+  menuButtons.forEach(
+    button => {
+
+      const isActive =
+        button.dataset.category ===
+        category
+
+      button.classList.toggle(
+        'is-active',
+        isActive
+      )
+
+      button.setAttribute(
+        'aria-pressed',
+        String(isActive)
+      )
+    }
+  )
+
+  const timeline =
+    gsap.timeline({
+      onComplete: () => {
+
+        activeCategory =
+          category
+
+        changingCategory =
+          false
+      },
+    })
+
+  timeline
+
+    /*
+      Foto sai levemente.
+    */
+
+    .to(
+      menuImage,
+      {
+        opacity: 0,
+        scale: 1.08,
+        duration: 0.28,
+        ease: 'power2.in',
+      }
+    )
+
+    /*
+      Texto sai.
+    */
+
+    .to(
+      '#menu-copy',
+      {
+        opacity: 0,
+        y: 14,
+        duration: 0.2,
+        ease: 'power2.in',
+      },
+      '<'
+    )
+
+    /*
+      Troca real do conteúdo.
+    */
+
+    .call(
+      () => {
+
+        menuImage.src =
+          data.image
+
+        menuImage.alt =
+          data.alt
+
+        menuKicker.textContent =
+          data.kicker
+
+        menuTitle.textContent =
+          data.title
+
+        menuDescription.textContent =
+          data.description
+      }
+    )
+
+    /*
+      Foto entra.
+    */
+
+    .fromTo(
+      menuImage,
+      {
+        opacity: 0,
+        scale: 1.1,
+      },
+      {
+        opacity: 1,
+        scale: 1.04,
+        duration: 0.55,
+        ease: 'power2.out',
+      }
+    )
+
+    /*
+      Texto reaparece.
+    */
+
+    .to(
+      '#menu-copy',
+      {
+        opacity: 1,
+        y: 0,
+        duration: 0.42,
+        ease: 'power2.out',
+      },
+      '<0.08'
+    )
+}
+
+/* =========================================================
+   CLIQUES / TOQUES
+========================================================= */
+
+menuButtons.forEach(
+  button => {
+
+    button.addEventListener(
+      'click',
+      () => {
+
+        changeMenuScene(
+          button.dataset.category
+        )
+      }
+    )
+  }
+)
+
+/* =========================================================
+   RESIZE
 ========================================================= */
 
 function handleResize() {

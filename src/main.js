@@ -1210,3 +1210,649 @@ function handleResize() {
 handleResize()
 
 window.addEventListener('resize', handleResize)
+/* =========================================================
+   QUARTA CENA — CONVERSÃO / FECHAMENTO
+========================================================= */
+
+const finalSceneStyleTag =
+  document.createElement('style')
+
+finalSceneStyleTag.textContent = `
+  .final-scene {
+    position: relative;
+
+    min-height: 96svh;
+
+    display: flex;
+    align-items: center;
+
+    overflow: hidden;
+
+    margin-top: -1px;
+
+    padding:
+      120px
+      0
+      70px;
+
+    background:
+      radial-gradient(
+        circle at 70% 40%,
+        rgba(242, 138, 30, 0.12),
+        transparent 34%
+      ),
+      linear-gradient(
+        180deg,
+        #1c120e 0%,
+        #140d0a 38%,
+        #0f0b09 100%
+      );
+  }
+
+  .final-scene::before {
+    content: '';
+
+    position: absolute;
+
+    inset: 0;
+
+    pointer-events: none;
+
+    background:
+      radial-gradient(
+        circle at 50% 120%,
+        rgba(255, 106, 26, 0.12),
+        transparent 42%
+      );
+  }
+
+  .final-scene-inner {
+    position: relative;
+
+    z-index: 3;
+
+    width: min(92%, 1320px);
+    max-width: 1320px;
+  }
+
+  .final-scene-copy {
+    position: relative;
+
+    z-index: 4;
+
+    max-width: 920px;
+  }
+
+  .final-scene h2 {
+    margin:
+      14px
+      0
+      30px;
+
+    max-width: 900px;
+
+    font-family:
+      'Bebas Neue',
+      sans-serif;
+
+    font-size:
+      clamp(
+        5.6rem,
+        11vw,
+        11rem
+      );
+
+    font-weight: 400;
+
+    line-height: 0.8;
+
+    letter-spacing: -0.02em;
+
+    text-transform: uppercase;
+
+    color: var(--cream);
+  }
+
+  .final-scene h2 span {
+    display: block;
+
+    color: var(--orange);
+  }
+
+  .final-scene-description {
+    max-width: 590px;
+
+    margin-bottom: 38px;
+
+    color:
+      rgba(246, 235, 221, 0.7);
+
+    font-size:
+      clamp(
+        0.95rem,
+        1.4vw,
+        1.08rem
+      );
+
+    line-height: 1.8;
+  }
+
+  .final-scene-actions {
+    display: flex;
+    flex-wrap: wrap;
+
+    gap: 14px;
+
+    margin-bottom: 52px;
+  }
+
+  .final-scene-actions .button {
+    min-width: 180px;
+
+    justify-content: center;
+  }
+
+  .final-scene-info {
+    width: min(
+      100%,
+      740px
+    );
+
+    display: grid;
+
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+
+    border-top:
+      1px solid
+      rgba(246, 235, 221, 0.12);
+
+    border-bottom:
+      1px solid
+      rgba(246, 235, 221, 0.12);
+  }
+
+  .final-info-item {
+    padding:
+      22px
+      24px
+      22px
+      0;
+  }
+
+  .final-info-item +
+  .final-info-item {
+    padding-left: 28px;
+
+    border-left:
+      1px solid
+      rgba(246, 235, 221, 0.12);
+  }
+
+  .final-info-label {
+    display: block;
+
+    margin-bottom: 8px;
+
+    color: var(--orange);
+
+    font-size: 0.65rem;
+
+    font-weight: 700;
+
+    letter-spacing: 0.18em;
+
+    text-transform: uppercase;
+  }
+
+  .final-info-value {
+    color: var(--cream);
+
+    font-size: 0.92rem;
+
+    line-height: 1.6;
+  }
+
+  .final-scene-word {
+    position: absolute;
+
+    z-index: 1;
+
+    right: -2vw;
+    bottom: -3vw;
+
+    pointer-events: none;
+
+    user-select: none;
+
+    font-family:
+      'Bebas Neue',
+      sans-serif;
+
+    font-size:
+      clamp(
+        13rem,
+        29vw,
+        34rem
+      );
+
+    line-height: 0.7;
+
+    color: transparent;
+
+    -webkit-text-stroke:
+      1px
+      rgba(246, 235, 221, 0.045);
+
+    white-space: nowrap;
+  }
+
+  .final-orange-glow {
+    position: absolute;
+
+    z-index: 1;
+
+    width: 480px;
+    height: 480px;
+
+    right: 4%;
+    top: 20%;
+
+    border-radius: 50%;
+
+    pointer-events: none;
+
+    background:
+      rgba(242, 138, 30, 0.08);
+
+    filter:
+      blur(110px);
+  }
+
+  .final-footer {
+    position: absolute;
+
+    z-index: 4;
+
+    left: 4%;
+    right: 4%;
+    bottom: 24px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 20px;
+
+    color:
+      rgba(246, 235, 221, 0.3);
+
+    font-size: 0.62rem;
+
+    letter-spacing: 0.12em;
+
+    text-transform: uppercase;
+  }
+  /* ======================================================
+     MARCA E INSTAGRAM — CENA FINAL
+  ====================================================== */
+
+  .final-brand {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+
+    margin-bottom: 22px;
+  }
+
+  .final-brand-logo {
+    width: 64px;
+    height: 64px;
+
+    object-fit: cover;
+
+    border-radius: 14px;
+
+    box-shadow:
+      0 10px 30px rgba(0, 0, 0, 0.22);
+  }
+
+  .final-brand-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .final-brand-hint {
+    color: rgba(246, 235, 221, 0.5);
+
+    font-size: 0.72rem;
+
+    letter-spacing: 0.12em;
+
+    text-transform: uppercase;
+  }
+
+  .final-social-inline {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .final-social-icon {
+    width: 16px;
+    height: 16px;
+
+    color: var(--orange);
+
+    flex-shrink: 0;
+  }
+
+  .final-info-value a {
+    color: inherit;
+    text-decoration: none;
+
+    transition: color 0.25s ease;
+  }
+
+  .final-info-value a:hover {
+    color: var(--orange);
+  }
+
+  @media (max-width: 799px) {
+
+    .final-scene {
+      min-height: 90svh;
+
+      padding:
+        90px
+        0
+        100px;
+    }
+
+    .final-scene h2 {
+      font-size:
+        clamp(
+          4.6rem,
+          20vw,
+          7rem
+        );
+    }
+
+    .final-scene-info {
+      grid-template-columns: 1fr;
+    }
+
+    .final-info-item {
+      padding:
+        20px
+        0;
+    }
+
+    .final-info-item +
+    .final-info-item {
+      padding-left: 0;
+
+      border-left: 0;
+
+      border-top:
+        1px solid
+        rgba(246, 235, 221, 0.12);
+    }
+
+    .final-scene-actions {
+      flex-direction: column;
+
+      align-items: stretch;
+    }
+
+    .final-scene-actions .button {
+      width: 100%;
+    }
+
+    .final-scene-word {
+      right: -15vw;
+      bottom: 4%;
+    }
+
+    .final-footer {
+      left: 5%;
+      right: 5%;
+
+      flex-direction: column;
+      align-items: flex-start;
+
+      gap: 6px;
+    }
+  }
+`
+
+document.head.appendChild(
+  finalSceneStyleTag
+)
+
+const mainElement =
+  document.querySelector('main')
+
+mainElement.insertAdjacentHTML(
+  'beforeend',
+  `
+    <section
+      class="final-scene"
+      id="pedido"
+    >
+
+      <div class="final-orange-glow"></div>
+
+      <div class="container final-scene-inner">
+
+        <div class="final-scene-copy">
+
+         <div class="final-brand">
+
+  <img
+    class="final-brand-logo"
+    src="/images/logo-mariba.jpg"
+    alt="Logo Maribá Espetinhos"
+  >
+
+  <div class="final-brand-meta">
+
+    <span class="eyebrow">
+      MARIBÁ ESPETINHOS
+    </span>
+
+    <span class="final-brand-hint">
+      Brasa · Chopp · Bons momentos
+    </span>
+
+  </div>
+
+</div>
+
+          <h2>
+            A noite começa
+
+            <span>
+              aqui.
+            </span>
+          </h2>
+
+          <p class="final-scene-description">
+            Espetinhos na brasa, chopp gelado
+            e bons momentos no centro de Aguaí.
+            Conheça o Maribá e acompanhe as novidades
+            pelo Instagram.
+          </p>
+
+          <div class="final-scene-actions">
+
+            <a
+              class="button button-primary"
+              href="https://www.instagram.com/maribaespetinhos/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Abrir Instagram
+            </a>
+
+            <a
+              class="button button-secondary"
+              href="https://www.google.com/maps/search/?api=1&query=Rua%20Vallins%2C%20417%20Centro%20Agua%C3%AD%20SP"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Como chegar
+            </a>
+
+          </div>
+
+          <div class="final-scene-info">
+
+            <div class="final-info-item">
+
+              <span class="final-info-label">
+                Endereço
+              </span>
+
+              <span class="final-info-value">
+                Rua Vallins, 417 · Centro · Aguaí
+              </span>
+
+            </div>
+
+            <div class="final-info-item">
+
+              <span class="final-info-label">
+                Instagram
+              </span>
+
+              <span class="final-info-value final-social-inline">
+
+  <svg
+    class="final-social-icon"
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    aria-hidden="true"
+  >
+    <rect
+      x="3.25"
+      y="3.25"
+      width="17.5"
+      height="17.5"
+      rx="5"
+      stroke="currentColor"
+      stroke-width="1.8"
+    />
+
+    <circle
+      cx="12"
+      cy="12"
+      r="4.2"
+      stroke="currentColor"
+      stroke-width="1.8"
+    />
+
+    <circle
+      cx="17.4"
+      cy="6.8"
+      r="1.1"
+      fill="currentColor"
+    />
+  </svg>
+
+  <a
+    href="https://www.instagram.com/maribaespetinhos/"
+    target="_blank"
+    rel="noopener noreferrer"
+  >
+    @maribaespetinhos
+  </a>
+
+</span>
+
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <div
+        class="final-scene-word"
+        aria-hidden="true"
+      >
+        MARIBÁ
+      </div>
+
+      <div class="final-footer">
+
+        <span>
+          Maribá Espetinhos · Aguaí — SP
+        </span>
+
+        <span>
+          Brasa · Chopp · Bons momentos
+        </span>
+
+      </div>
+
+    </section>
+  `
+)
+
+/* =========================================================
+   ANIMAÇÃO DA CENA FINAL
+========================================================= */
+
+gsap.from(
+  '.final-scene-copy',
+  {
+    y: 80,
+    opacity: 0,
+
+    scrollTrigger: {
+      trigger:
+        '.final-scene',
+
+      start:
+        'top 78%',
+
+      end:
+        'top 42%',
+
+      scrub:
+        1,
+    },
+  }
+)
+
+gsap.fromTo(
+  '.final-scene-word',
+  {
+    xPercent: 5,
+  },
+  {
+    xPercent: -5,
+
+    scrollTrigger: {
+      trigger:
+        '.final-scene',
+
+      start:
+        'top bottom',
+
+      end:
+        'bottom top',
+
+      scrub:
+        1.4,
+    },
+  }
+)

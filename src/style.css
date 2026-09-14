@@ -893,3 +893,20 @@ canvas {
   }
 
 }
+/* =========================================================
+   LEGIBILIDADE — TEXTO SOBRE O PRODUTO
+========================================================= */
+
+.concept-section .menu-showcase-description {
+  max-width: 390px;
+
+  text-shadow:
+    0 2px 18px rgba(0, 0, 0, 0.95),
+    0 1px 4px rgba(0, 0, 0, 0.9);
+}
+
+.concept-section .menu-showcase-title,
+.concept-section .menu-showcase-kicker {
+  text-shadow:
+    0 3px 20px rgba(0, 0, 0, 0.85);
+}

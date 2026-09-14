@@ -382,7 +382,7 @@ document.querySelector('#app').innerHTML = `
       <div class="container header-content">
         <div class="brand">
           <img
-            src="/images/logo-mariba.jpg"
+            src="./images/logo-mariba.jpg"
             alt="Maribá Espetinhos"
             style="
               width: 64px;
@@ -461,7 +461,7 @@ document.querySelector('#app').innerHTML = `
             "
           >
             <img
-              src="/images/espeto-real.jpg"
+              src="./images/espeto-real.jpg"
               alt="Espetos de carne assados na brasa"
               style="
                 width: 100%;
@@ -622,7 +622,7 @@ document.querySelector('#app').innerHTML = `
             <div class="menu-showcase" id="menu-showcase">
               <img
                 id="menu-image"
-                src="/images/espeto-real.jpg"
+                src="./images/espeto-real.jpg"
                 alt="Espetos assados na brasa"
               >
 
@@ -720,7 +720,7 @@ document.querySelector('#app').innerHTML = `
 
           <div class="atmosphere-media">
             <img
-              src="/images/ambiente-mariba.png"
+              src="./images/ambiente-mariba.png"
               alt="Clientes sentados nas mesas ao ar livre no Maribá"
             >
 
@@ -1081,7 +1081,7 @@ gsap.from('.atmosphere-media', {
 
 const menuData = {
   espeto: {
-    image: '/images/espeto-real.jpg',
+    image: './images/espeto-real.jpg',
     alt: 'Espetos assados na brasa',
     kicker: 'NA BRASA',
     title: 'Espetinhos',
@@ -1089,7 +1089,7 @@ const menuData = {
   },
 
   chopp: {
-    image: '/images/chopp-real.jpg',
+    image: './images/chopp-real.jpg',
     alt: 'Copo de chopp gelado',
     kicker: 'BEM GELADO',
     title: 'Chopp',
@@ -1655,7 +1655,7 @@ mainElement.insertAdjacentHTML(
 
   <img
     class="final-brand-logo"
-    src="/images/logo-mariba.jpg"
+    src="./images/logo-mariba.jpg"
     alt="Logo Maribá Espetinhos"
   >
 

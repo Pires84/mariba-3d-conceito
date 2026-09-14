@@ -1,18 +1,25 @@
 import './style.css'
+
 import * as THREE from 'three'
+
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js'
 
 gsap.registerPlugin(ScrollTrigger)
+
+/* =========================================================
+   HTML
+========================================================= */
 
 document.querySelector('#app').innerHTML = `
   <div class="experience">
 
     <header class="site-header">
+
       <div class="container header-content">
 
         <div class="brand">
+
           <img
             src="/images/logo-mariba.jpg"
             alt="Maribá Espetinhos"
@@ -23,19 +30,35 @@ document.querySelector('#app').innerHTML = `
               display: block;
             "
           >
+
         </div>
 
-        <nav class="desktop-nav" aria-label="Navegação principal">
-          <a href="#cardapio">Cardápio</a>
-          <a href="#experiencia">Experiência</a>
-          <a href="#localizacao">Localização</a>
+        <nav
+          class="desktop-nav"
+          aria-label="Navegação principal"
+        >
+          <a href="#cardapio">
+            Cardápio
+          </a>
+
+          <a href="#experiencia">
+            Experiência
+          </a>
+
+          <a href="#localizacao">
+            Localização
+          </a>
         </nav>
 
-        <a href="#pedido" class="header-cta">
+        <a
+          href="#pedido"
+          class="header-cta"
+        >
           Fazer pedido
         </a>
 
       </div>
+
     </header>
 
     <main>
@@ -49,6 +72,106 @@ document.querySelector('#app').innerHTML = `
 
         <div class="hero-glow"></div>
 
+        <!-- FOTO REAL -->
+
+        <div
+          id="product-stage"
+          style="
+            position: absolute;
+            z-index: 2;
+
+            right: -4%;
+            top: 50%;
+
+            width: min(58vw, 820px);
+
+            transform: translateY(-50%);
+
+            pointer-events: none;
+
+            perspective: 1400px;
+
+            -webkit-mask-image:
+              linear-gradient(
+                to right,
+                transparent 0%,
+                rgba(0,0,0,0.1) 7%,
+                black 25%,
+                black 94%,
+                transparent 100%
+              );
+
+            mask-image:
+              linear-gradient(
+                to right,
+                transparent 0%,
+                rgba(0,0,0,0.1) 7%,
+                black 25%,
+                black 94%,
+                transparent 100%
+              );
+          "
+        >
+
+          <div
+            id="product-photo"
+            style="
+              position: relative;
+
+              transform-origin:
+                55% 50%;
+
+              will-change:
+                transform,
+                opacity;
+
+              filter:
+                saturate(1.06)
+                contrast(1.05)
+                brightness(0.9);
+            "
+          >
+
+            <img
+              src="/images/espeto-real.jpg"
+              alt="Espetos de carne assados na brasa"
+              style="
+                width: 100%;
+                height: auto;
+                display: block;
+                object-fit: cover;
+              "
+            >
+
+            <div
+              style="
+                position: absolute;
+                inset: 0;
+
+                background:
+                  radial-gradient(
+                    circle at 60% 65%,
+                    rgba(255, 106, 26, 0.13),
+                    transparent 46%
+                  ),
+                  linear-gradient(
+                    90deg,
+                    rgba(15, 11, 9, 1) 0%,
+                    rgba(15, 11, 9, 0.68) 12%,
+                    rgba(15, 11, 9, 0.12) 31%,
+                    transparent 46%
+                  );
+
+                pointer-events: none;
+              "
+            ></div>
+
+          </div>
+
+        </div>
+
+        <!-- TEXTO -->
+
         <div class="container hero-content">
 
           <div class="hero-copy">
@@ -59,7 +182,10 @@ document.querySelector('#app').innerHTML = `
 
             <h1>
               A noite começa
-              <span>na brasa.</span>
+
+              <span>
+                na brasa.
+              </span>
             </h1>
 
             <p class="hero-description">
@@ -69,11 +195,17 @@ document.querySelector('#app').innerHTML = `
 
             <div class="hero-actions">
 
-              <a href="#cardapio" class="button button-primary">
+              <a
+                href="#cardapio"
+                class="button button-primary"
+              >
                 Ver cardápio
               </a>
 
-              <a href="#pedido" class="button button-secondary">
+              <a
+                href="#pedido"
+                class="button button-secondary"
+              >
                 Fazer pedido
               </a>
 
@@ -82,23 +214,69 @@ document.querySelector('#app').innerHTML = `
           </div>
 
           <div class="hero-object-label">
-            <span>01</span>
+
+            <span>
+              01
+            </span>
+
             <p>
-              Espeto 3D<br>
-              experiência interativa
+              Fotografia real<br>
+              atmosfera 3D
             </p>
+
           </div>
 
         </div>
 
         <div class="scroll-indicator">
-          <span>ROLE PARA EXPLORAR</span>
+
+          <span>
+            ROLE PARA EXPLORAR
+          </span>
+
           <div class="scroll-line"></div>
+
         </div>
+
+        <!-- TRANSIÇÃO SUAVE -->
+
+        <div
+          id="scene-transition"
+          style="
+            position: absolute;
+
+            z-index: 4;
+
+            left: 0;
+            right: 0;
+            bottom: -2px;
+
+            height: 34%;
+
+            pointer-events: none;
+
+            background:
+              linear-gradient(
+                to bottom,
+                transparent 0%,
+                rgba(20, 13, 10, 0.08) 18%,
+                rgba(24, 15, 11, 0.42) 50%,
+                rgba(28, 18, 14, 0.82) 78%,
+                #1c120e 100%
+              );
+          "
+        ></div>
 
       </section>
 
-      <section class="concept-section" id="cardapio">
+      <section
+        class="concept-section"
+        id="cardapio"
+        style="
+          border-top: 0;
+          margin-top: -2px;
+        "
+      >
 
         <div class="container">
 
@@ -108,13 +286,17 @@ document.querySelector('#app').innerHTML = `
 
           <h2>
             Do fogo direto
-            <span>pra mesa.</span>
+
+            <span>
+              pra mesa.
+            </span>
           </h2>
 
           <p>
-            Conforme o visitante avança pela experiência,
-            o objeto 3D acompanha a narrativa e conduz
-            a passagem entre as cenas.
+            Fotografia real combinada com profundidade,
+            movimento, brasas e iluminação para criar
+            impacto visual sem transformar a comida
+            em uma ilustração artificial.
           </p>
 
         </div>
@@ -130,32 +312,50 @@ document.querySelector('#app').innerHTML = `
    THREE.JS
 ========================================================= */
 
-const canvas = document.querySelector('#webgl')
+const canvas =
+  document.querySelector('#webgl')
 
-const scene = new THREE.Scene()
+canvas.style.zIndex = '4'
 
-const camera = new THREE.PerspectiveCamera(
-  35,
-  window.innerWidth / window.innerHeight,
-  0.1,
-  100
+const scene =
+  new THREE.Scene()
+
+const camera =
+  new THREE.PerspectiveCamera(
+    35,
+    window.innerWidth /
+      window.innerHeight,
+    0.1,
+    100
+  )
+
+camera.position.set(
+  0,
+  0,
+  8
 )
 
-camera.position.set(0, 0, 8)
+/* =========================================================
+   RENDERER
+========================================================= */
 
-const renderer = new THREE.WebGLRenderer({
-  canvas,
-  antialias: true,
-  alpha: true,
-})
-
-renderer.setPixelRatio(
-  Math.min(window.devicePixelRatio, 2)
-)
+const renderer =
+  new THREE.WebGLRenderer({
+    canvas,
+    antialias: true,
+    alpha: true,
+  })
 
 renderer.setSize(
   window.innerWidth,
   window.innerHeight
+)
+
+renderer.setPixelRatio(
+  Math.min(
+    window.devicePixelRatio,
+    2
+  )
 )
 
 renderer.outputColorSpace =
@@ -164,538 +364,364 @@ renderer.outputColorSpace =
 renderer.toneMapping =
   THREE.ACESFilmicToneMapping
 
-renderer.toneMappingExposure = 1.25
+renderer.toneMappingExposure =
+  1.05
 
 /* =========================================================
-   RIG PRINCIPAL
+   TEXTURA DAS BRASAS
 ========================================================= */
 
-const skewerRig = new THREE.Group()
-const skewer = new THREE.Group()
+function createEmberTexture() {
 
-skewerRig.add(skewer)
-scene.add(skewerRig)
+  const size = 128
 
-/* =========================================================
-   MATERIAIS
-========================================================= */
+  const emberCanvas =
+    document.createElement('canvas')
 
-const metalMaterial =
-  new THREE.MeshStandardMaterial({
-    color: 0xa79b91,
-    metalness: 0.95,
-    roughness: 0.2,
-  })
+  emberCanvas.width = size
+  emberCanvas.height = size
 
-const darkMetalMaterial =
-  new THREE.MeshStandardMaterial({
-    color: 0x39302c,
-    metalness: 0.82,
-    roughness: 0.3,
-  })
+  const context =
+    emberCanvas.getContext('2d')
 
-const meatMaterial =
-  new THREE.MeshPhysicalMaterial({
-    color: 0xa63e20,
-    roughness: 0.46,
-    metalness: 0.02,
-    clearcoat: 0.18,
-    clearcoatRoughness: 0.45,
-  })
+  const gradient =
+    context.createRadialGradient(
+      size / 2,
+      size / 2,
+      0,
 
-const meatDarkMaterial =
-  new THREE.MeshPhysicalMaterial({
-    color: 0x7c2918,
-    roughness: 0.52,
-    metalness: 0.02,
-    clearcoat: 0.12,
-  })
-
-const toastedMaterial =
-  new THREE.MeshPhysicalMaterial({
-    color: 0xc75a25,
-    roughness: 0.48,
-    metalness: 0.01,
-    clearcoat: 0.15,
-  })
-
-const onionMaterial =
-  new THREE.MeshStandardMaterial({
-    color: 0xe0a06e,
-    roughness: 0.72,
-  })
-
-const grillMaterial =
-  new THREE.MeshStandardMaterial({
-    color: 0x281510,
-    roughness: 0.95,
-  })
-
-const woodMaterial =
-  new THREE.MeshStandardMaterial({
-    color: 0x6b351d,
-    roughness: 0.78,
-  })
-
-const woodDarkMaterial =
-  new THREE.MeshStandardMaterial({
-    color: 0x3f2014,
-    roughness: 0.82,
-  })
-
-/* =========================================================
-   HASTE METÁLICA
-========================================================= */
-
-const rodGeometry =
-  new THREE.CylinderGeometry(
-    0.032,
-    0.032,
-    6.4,
-    20
-  )
-
-const rod =
-  new THREE.Mesh(
-    rodGeometry,
-    metalMaterial
-  )
-
-skewer.add(rod)
-
-/* =========================================================
-   PONTA DO ESPETO
-========================================================= */
-
-const tipGeometry =
-  new THREE.ConeGeometry(
-    0.075,
-    0.55,
-    18
-  )
-
-const tip =
-  new THREE.Mesh(
-    tipGeometry,
-    metalMaterial
-  )
-
-tip.position.y = 3.45
-
-skewer.add(tip)
-
-/* =========================================================
-   FUNÇÃO PARA CRIAR PEDAÇOS DE CARNE
-========================================================= */
-
-function createMeatPiece({
-  y,
-  material,
-  rotationY,
-  rotationZ,
-  scaleX = 1,
-  scaleY = 1,
-  scaleZ = 1,
-  grill = true,
-}) {
-
-  const group =
-    new THREE.Group()
-
-  const geometry =
-    new RoundedBoxGeometry(
-      0.95,
-      0.62,
-      0.78,
-      5,
-      0.16
+      size / 2,
+      size / 2,
+      size / 2
     )
 
-  const meat =
-    new THREE.Mesh(
+  gradient.addColorStop(
+    0,
+    'rgba(255,255,230,1)'
+  )
+
+  gradient.addColorStop(
+    0.12,
+    'rgba(255,185,85,1)'
+  )
+
+  gradient.addColorStop(
+    0.32,
+    'rgba(255,100,20,0.9)'
+  )
+
+  gradient.addColorStop(
+    0.62,
+    'rgba(255,60,10,0.32)'
+  )
+
+  gradient.addColorStop(
+    1,
+    'rgba(255,60,10,0)'
+  )
+
+  context.fillStyle =
+    gradient
+
+  context.fillRect(
+    0,
+    0,
+    size,
+    size
+  )
+
+  const texture =
+    new THREE.CanvasTexture(
+      emberCanvas
+    )
+
+  texture.colorSpace =
+    THREE.SRGBColorSpace
+
+  return texture
+}
+
+const emberTexture =
+  createEmberTexture()
+
+/* =========================================================
+   CAMPO DE BRASAS
+========================================================= */
+
+function createEmberField({
+  count,
+  width,
+  height,
+  depth,
+  size,
+  opacity,
+  speedMin,
+  speedMax,
+}) {
+
+  const positions =
+    new Float32Array(
+      count * 3
+    )
+
+  const speeds =
+    new Float32Array(
+      count
+    )
+
+  for (
+    let i = 0;
+    i < count;
+    i++
+  ) {
+
+    positions[
+      i * 3
+    ] =
+      (
+        Math.random() -
+        0.5
+      ) * width
+
+    positions[
+      i * 3 + 1
+    ] =
+      (
+        Math.random() -
+        0.5
+      ) * height
+
+    positions[
+      i * 3 + 2
+    ] =
+      (
+        Math.random() -
+        0.5
+      ) * depth
+
+    speeds[i] =
+      speedMin +
+      Math.random() *
+      (
+        speedMax -
+        speedMin
+      )
+  }
+
+  const geometry =
+    new THREE.BufferGeometry()
+
+  const positionAttribute =
+    new THREE.BufferAttribute(
+      positions,
+      3
+    )
+
+  geometry.setAttribute(
+    'position',
+    positionAttribute
+  )
+
+  const material =
+    new THREE.PointsMaterial({
+
+      map:
+        emberTexture,
+
+      color:
+        0xff7a24,
+
+      size,
+
+      transparent:
+        true,
+
+      opacity,
+
+      depthWrite:
+        false,
+
+      blending:
+        THREE.AdditiveBlending,
+    })
+
+  const points =
+    new THREE.Points(
       geometry,
       material
     )
 
-  meat.scale.set(
-    scaleX,
-    scaleY,
-    scaleZ
+  scene.add(
+    points
   )
 
-  group.add(meat)
+  return {
+    points,
+    geometry,
+    material,
+    positions,
+    speeds,
+    count,
+    height,
+  }
+}
 
-  if (grill) {
+/* =========================================================
+   CAMADAS
+========================================================= */
 
-    const markGeometry =
-      new RoundedBoxGeometry(
-        0.54,
-        0.045,
-        0.025,
-        2,
-        0.015
-      )
+const farEmbers =
+  createEmberField({
 
-    for (let i = -1; i <= 1; i++) {
+    count: 100,
 
-      const mark =
-        new THREE.Mesh(
-          markGeometry,
-          grillMaterial
-        )
+    width: 12,
+    height: 9,
+    depth: 4,
 
-      mark.position.set(
-        0,
-        i * 0.16,
-        0.405 * scaleZ
-      )
+    size: 0.045,
 
-      mark.rotation.z = -0.45
+    opacity: 0.42,
 
-      group.add(mark)
+    speedMin: 0.001,
+    speedMax: 0.004,
+  })
+
+const middleEmbers =
+  createEmberField({
+
+    count: 70,
+
+    width: 11,
+    height: 8,
+    depth: 3,
+
+    size: 0.075,
+
+    opacity: 0.55,
+
+    speedMin: 0.002,
+    speedMax: 0.006,
+  })
+
+const foregroundEmbers =
+  createEmberField({
+
+    count: 32,
+
+    width: 10,
+    height: 7,
+    depth: 2,
+
+    size: 0.13,
+
+    opacity: 0.32,
+
+    speedMin: 0.003,
+    speedMax: 0.008,
+  })
+
+/* =========================================================
+   MOVIMENTO DAS BRASAS
+========================================================= */
+
+function updateEmbers(
+  field,
+  delta
+) {
+
+  const {
+    positions,
+    speeds,
+    count,
+    height,
+    geometry,
+  } = field
+
+  for (
+    let i = 0;
+    i < count;
+    i++
+  ) {
+
+    positions[
+      i * 3 + 1
+    ] +=
+      speeds[i] *
+      delta *
+      60
+
+    if (
+      positions[
+        i * 3 + 1
+      ] >
+      height / 2
+    ) {
+
+      positions[
+        i * 3 + 1
+      ] =
+        -height / 2
+
+      positions[
+        i * 3
+      ] +=
+        (
+          Math.random() -
+          0.5
+        ) * 0.8
     }
   }
 
-  group.position.y = y
-
-  group.rotation.y =
-    rotationY
-
-  group.rotation.z =
-    rotationZ
-
-  return group
+  geometry.attributes
+    .position
+    .needsUpdate = true
 }
 
 /* =========================================================
-   PEDAÇOS DO ESPETO
+   ANIMAÇÃO
 ========================================================= */
 
-const meatPieces = [
-
-  createMeatPiece({
-    y: 1.55,
-    material: meatMaterial,
-    rotationY: 0.15,
-    rotationZ: -0.08,
-    scaleX: 1.03,
-    scaleY: 0.95,
-  }),
-
-  createMeatPiece({
-    y: 0.78,
-    material: toastedMaterial,
-    rotationY: -0.3,
-    rotationZ: 0.12,
-    scaleX: 0.92,
-    scaleY: 1.05,
-    scaleZ: 0.96,
-  }),
-
-  createMeatPiece({
-    y: 0,
-    material: meatDarkMaterial,
-    rotationY: 0.38,
-    rotationZ: -0.12,
-    scaleX: 1.05,
-    scaleY: 0.9,
-  }),
-
-  createMeatPiece({
-    y: -0.78,
-    material: meatMaterial,
-    rotationY: -0.15,
-    rotationZ: 0.13,
-    scaleX: 0.94,
-    scaleY: 1.02,
-  }),
-
-  createMeatPiece({
-    y: -1.55,
-    material: toastedMaterial,
-    rotationY: 0.3,
-    rotationZ: -0.1,
-    scaleX: 1.02,
-    scaleY: 0.92,
-  }),
-
-]
-
-meatPieces.forEach(
-  piece => skewer.add(piece)
-)
-
-/* =========================================================
-   CEBOLA ENTRE ALGUNS PEDAÇOS
-========================================================= */
-
-function createOnionSlice(y, rotation) {
-
-  const geometry =
-    new RoundedBoxGeometry(
-      0.82,
-      0.11,
-      0.72,
-      4,
-      0.05
-    )
-
-  const onion =
-    new THREE.Mesh(
-      geometry,
-      onionMaterial
-    )
-
-  onion.position.y = y
-  onion.rotation.y = rotation
-
-  return onion
-}
-
-skewer.add(
-  createOnionSlice(
-    1.16,
-    0.2
-  )
-)
-
-skewer.add(
-  createOnionSlice(
-    -0.39,
-    -0.25
-  )
-)
-
-skewer.add(
-  createOnionSlice(
-    -1.16,
-    0.35
-  )
-)
-
-/* =========================================================
-   CABO DE MADEIRA
-========================================================= */
-
-const handleGeometry =
-  new THREE.CylinderGeometry(
-    0.18,
-    0.23,
-    1.55,
-    32
-  )
-
-const handle =
-  new THREE.Mesh(
-    handleGeometry,
-    woodMaterial
-  )
-
-handle.position.y = -3.25
-
-skewer.add(handle)
-
-/* =========================================================
-   DETALHES DO CABO
-========================================================= */
-
-const handleBottomGeometry =
-  new THREE.SphereGeometry(
-    0.23,
-    24,
-    16
-  )
-
-const handleBottom =
-  new THREE.Mesh(
-    handleBottomGeometry,
-    woodDarkMaterial
-  )
-
-handleBottom.scale.y = 0.75
-handleBottom.position.y = -4.02
-
-skewer.add(handleBottom)
-
-/* =========================================================
-   ANEL METÁLICO ENTRE CABO E HASTE
-========================================================= */
-
-const ferruleGeometry =
-  new THREE.CylinderGeometry(
-    0.19,
-    0.19,
-    0.22,
-    28
-  )
-
-const ferrule =
-  new THREE.Mesh(
-    ferruleGeometry,
-    darkMetalMaterial
-  )
-
-ferrule.position.y = -2.43
-
-skewer.add(ferrule)
-
-/* =========================================================
-   POSIÇÃO E ROTAÇÃO INICIAIS
-========================================================= */
-
-skewer.rotation.z = -0.55
-skewer.rotation.x = 0.18
-
-skewerRig.position.set(
-  1.8,
-  0.15,
-  0
-)
-
-/* =========================================================
-   LUZES
-========================================================= */
-
-const ambientLight =
-  new THREE.AmbientLight(
-    0xffd8bf,
-    0.72
-  )
-
-scene.add(ambientLight)
-
-const fireLight =
-  new THREE.PointLight(
-    0xff5a16,
-    58,
-    13
-  )
-
-fireLight.position.set(
-  2.2,
-  -2.6,
-  3.2
-)
-
-scene.add(fireLight)
-
-const rimLight =
-  new THREE.DirectionalLight(
-    0xffbf78,
-    3
-  )
-
-rimLight.position.set(
-  -3,
-  4,
-  4
-)
-
-scene.add(rimLight)
-
-const warmFillLight =
-  new THREE.PointLight(
-    0xffa85c,
-    12,
-    10
-  )
-
-warmFillLight.position.set(
-  -3,
-  1,
-  1
-)
-
-scene.add(warmFillLight)
-
-/* =========================================================
-   PARTÍCULAS / BRASAS
-========================================================= */
-
-const particleCount = 140
-
-const positions =
-  new Float32Array(
-    particleCount * 3
-  )
-
-for (
-  let i = 0;
-  i < particleCount;
-  i++
-) {
-
-  positions[i * 3] =
-    (Math.random() - 0.5) * 12
-
-  positions[i * 3 + 1] =
-    (Math.random() - 0.5) * 9
-
-  positions[i * 3 + 2] =
-    (Math.random() - 0.5) * 4
-}
-
-const particlesGeometry =
-  new THREE.BufferGeometry()
-
-particlesGeometry.setAttribute(
-  'position',
-  new THREE.BufferAttribute(
-    positions,
-    3
-  )
-)
-
-const particlesMaterial =
-  new THREE.PointsMaterial({
-    color: 0xff6a1a,
-    size: 0.04,
-    transparent: true,
-    opacity: 0.78,
-  })
-
-const particles =
-  new THREE.Points(
-    particlesGeometry,
-    particlesMaterial
-  )
-
-scene.add(particles)
-
-/* =========================================================
-   MOVIMENTO CONTÍNUO
-========================================================= */
-
-const clock = new THREE.Clock()
+const clock =
+  new THREE.Clock()
 
 function animate() {
 
+  const delta =
+    clock.getDelta()
+
   const elapsed =
-    clock.getElapsedTime()
+    clock.elapsedTime
 
-  skewer.rotation.y =
+  updateEmbers(
+    farEmbers,
+    delta
+  )
+
+  updateEmbers(
+    middleEmbers,
+    delta
+  )
+
+  updateEmbers(
+    foregroundEmbers,
+    delta
+  )
+
+  farEmbers.points.rotation.y =
     Math.sin(
-      elapsed * 0.42
-    ) * 0.28
-
-  skewer.position.y =
-    Math.sin(
-      elapsed * 0.75
-    ) * 0.1
-
-  particles.rotation.y =
-    elapsed * 0.015
-
-  particles.rotation.z =
-    Math.sin(
-      elapsed * 0.1
+      elapsed * 0.08
     ) * 0.04
 
-  fireLight.intensity =
-    58 +
+  middleEmbers.points.rotation.y =
     Math.sin(
-      elapsed * 3.2
-    ) * 4
+      elapsed * 0.12
+    ) * 0.06
+
+  foregroundEmbers.points.rotation.y =
+    Math.sin(
+      elapsed * 0.16
+    ) * 0.08
 
   renderer.render(
     scene,
@@ -710,66 +736,92 @@ function animate() {
 animate()
 
 /* =========================================================
-   GSAP + SCROLLTRIGGER
+   GSAP
 ========================================================= */
 
 const motion =
   gsap.matchMedia()
 
+/* =========================================================
+   DESKTOP
+========================================================= */
+
 motion.add(
+
   '(min-width: 800px)',
+
   () => {
+
+    gsap.set(
+      '#product-photo',
+      {
+        rotateZ: 2.2,
+
+        rotateY: -4,
+
+        rotateX: 1,
+
+        scale: 0.97,
+      }
+    )
 
     const timeline =
       gsap.timeline({
+
         scrollTrigger: {
-          trigger: '.hero',
-          start: 'top top',
-          end: '+=1300',
-          scrub: 1.2,
-          pin: true,
-          anticipatePin: 1,
+
+          trigger:
+            '.hero',
+
+          start:
+            'top top',
+
+          end:
+            '+=1450',
+
+          scrub:
+            1.15,
+
+          pin:
+            true,
+
+          anticipatePin:
+            1,
         },
       })
 
     timeline
+
       .to(
-        skewerRig.position,
+        '#product-stage',
         {
-          x: 0.5,
-          y: 0.35,
-          z: 1.8,
+          right: '3%',
+
+          top: '52%',
+
+          width:
+            'min(76vw, 1080px)',
+
           duration: 1,
         },
         0
       )
 
       .to(
-        skewerRig.rotation,
+        '#product-photo',
         {
-          x: 0.65,
-          y: Math.PI * 1.1,
-          z: 0.42,
-          duration: 1,
-        },
-        0
-      )
+          rotateZ: -1.5,
 
-      .to(
-        skewerRig.scale,
-        {
-          x: 1.35,
-          y: 1.35,
-          z: 1.35,
-          duration: 1,
-        },
-        0
-      )
+          rotateY: 6,
 
-      .to(
-        fireLight,
-        {
-          intensity: 92,
+          rotateX: -1,
+
+          scale: 1.13,
+
+          x: -35,
+
+          y: -8,
+
           duration: 1,
         },
         0
@@ -778,36 +830,72 @@ motion.add(
       .to(
         '.hero-copy',
         {
-          y: -70,
-          opacity: 0.16,
+          y: -85,
+
+          opacity: 0.035,
+
           duration: 0.8,
         },
-        0.15
+        0.14
       )
 
       .to(
         '.hero-object-label',
         {
           opacity: 0,
-          duration: 0.35,
+
+          duration: 0.3,
         },
-        0.12
+        0.1
       )
 
       .to(
         '.scroll-indicator',
         {
           opacity: 0,
+
           duration: 0.25,
         },
-        0.05
+        0.04
       )
 
       .to(
         '.hero-glow',
         {
-          scale: 1.5,
+          scale: 2,
+
           opacity: 1,
+
+          duration: 1,
+        },
+        0
+      )
+
+      .to(
+        farEmbers.material,
+        {
+          opacity: 0.55,
+
+          duration: 1,
+        },
+        0
+      )
+
+      .to(
+        middleEmbers.material,
+        {
+          opacity: 0.72,
+
+          duration: 1,
+        },
+        0
+      )
+
+      .to(
+        foregroundEmbers.material,
+        {
+          opacity: 0.48,
+
           duration: 1,
         },
         0
@@ -820,33 +908,55 @@ motion.add(
 ========================================================= */
 
 motion.add(
+
   '(max-width: 799px)',
+
   () => {
 
-    gsap.to(
-      skewerRig.rotation,
+    gsap.set(
+      '#product-stage',
       {
-        y: Math.PI * 0.65,
+        width: '108vw',
 
-        scrollTrigger: {
-          trigger: '.hero',
-          start: 'top top',
-          end: 'bottom top',
-          scrub: 1,
-        },
+        right: '-20%',
+
+        top: '73%',
+      }
+    )
+
+    gsap.set(
+      '#product-photo',
+      {
+        rotateZ: 0,
+
+        rotateY: 0,
+
+        scale: 0.94,
       }
     )
 
     gsap.to(
-      skewerRig.position,
+      '#product-photo',
       {
-        y: -1.4,
+        scale: 1.07,
+
+        x: -10,
+
+        y: -18,
 
         scrollTrigger: {
-          trigger: '.hero',
-          start: 'top top',
-          end: 'bottom top',
-          scrub: 1,
+
+          trigger:
+            '.hero',
+
+          start:
+            'top top',
+
+          end:
+            'bottom top',
+
+          scrub:
+            1,
         },
       }
     )
@@ -854,26 +964,29 @@ motion.add(
 )
 
 /* =========================================================
-   ENTRADA DA SEGUNDA CENA
+   SEGUNDA CENA
 ========================================================= */
 
 gsap.from(
   '.concept-section .container',
   {
-    y: 80,
+    y: 70,
+
     opacity: 0,
 
     scrollTrigger: {
+
       trigger:
         '.concept-section',
 
       start:
-        'top 78%',
+        'top 84%',
 
       end:
-        'top 45%',
+        'top 48%',
 
-      scrub: 1,
+      scrub:
+        1,
     },
   }
 )
@@ -906,25 +1019,6 @@ function handleResize() {
       2
     )
   )
-
-  if (width < 800) {
-
-    skewerRig.position.x = 0.8
-    skewerRig.position.y = -0.8
-
-    skewerRig.scale.setScalar(
-      0.72
-    )
-
-  } else {
-
-    skewerRig.position.x = 1.8
-    skewerRig.position.y = 0.15
-
-    skewerRig.scale.setScalar(
-      1
-    )
-  }
 }
 
 handleResize()

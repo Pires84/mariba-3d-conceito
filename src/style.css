@@ -737,3 +737,159 @@ canvas {
   padding-top: 90px;
   padding-bottom: 120px;
 }
+/* =========================================================
+   REFINAMENTO CINEMATOGRÁFICO — SEGUNDA CENA
+========================================================= */
+
+.concept-section .container {
+  width: min(92%, 1320px);
+  max-width: 1320px;
+}
+
+.concept-section .menu-experience {
+  margin-top: 48px;
+  gap: clamp(44px, 6vw, 86px);
+  align-items: center;
+}
+
+/* ---------------------------------------------------------
+   ÁREA DA FOTO
+--------------------------------------------------------- */
+
+.concept-section .menu-showcase {
+  min-height: 620px;
+
+  border-radius: 0;
+
+  background: transparent;
+
+  overflow: hidden;
+
+  margin-right: -5vw;
+
+  -webkit-mask-image:
+    linear-gradient(
+      to right,
+      transparent 0%,
+      rgba(0, 0, 0, 0.35) 6%,
+      black 16%,
+      black 88%,
+      rgba(0, 0, 0, 0.45) 95%,
+      transparent 100%
+    );
+
+  mask-image:
+    linear-gradient(
+      to right,
+      transparent 0%,
+      rgba(0, 0, 0, 0.35) 6%,
+      black 16%,
+      black 88%,
+      rgba(0, 0, 0, 0.45) 95%,
+      transparent 100%
+    );
+}
+
+.concept-section .menu-showcase::after {
+  background:
+    linear-gradient(
+      to top,
+      rgba(28, 18, 14, 0.98) 0%,
+      rgba(28, 18, 14, 0.62) 15%,
+      rgba(15, 11, 9, 0.08) 43%,
+      transparent 67%
+    );
+}
+
+.concept-section .menu-showcase img {
+  object-fit: cover;
+  object-position: center;
+
+  filter:
+    saturate(1.08)
+    contrast(1.06)
+    brightness(0.96);
+}
+
+/* ---------------------------------------------------------
+   TEXTO SOBRE A FOTO
+--------------------------------------------------------- */
+
+.concept-section .menu-showcase-content {
+  left: clamp(38px, 4vw, 60px);
+  right: clamp(38px, 7vw, 100px);
+  bottom: 48px;
+}
+
+.concept-section .menu-showcase-kicker {
+  font-size: 0.7rem;
+}
+
+.concept-section .menu-showcase-title {
+  font-size: clamp(3.6rem, 6vw, 5.7rem);
+}
+
+.concept-section .menu-showcase-description {
+  max-width: 540px;
+
+  font-size: 0.92rem;
+
+  line-height: 1.7;
+}
+
+/* ---------------------------------------------------------
+   BOTÕES DA EXPERIÊNCIA
+--------------------------------------------------------- */
+
+.concept-section .menu-option {
+  padding-top: 26px;
+  padding-bottom: 26px;
+}
+
+.concept-section .menu-option-number {
+  opacity: 0.7;
+}
+
+/* ---------------------------------------------------------
+   CELULAR
+--------------------------------------------------------- */
+
+@media (max-width: 799px) {
+
+  .concept-section .container {
+    width: min(90%, 680px);
+  }
+
+  .concept-section .menu-experience {
+    gap: 34px;
+  }
+
+  .concept-section .menu-showcase {
+    min-height: 500px;
+
+    margin-right: 0;
+
+    -webkit-mask-image:
+      linear-gradient(
+        to bottom,
+        black 0%,
+        black 88%,
+        transparent 100%
+      );
+
+    mask-image:
+      linear-gradient(
+        to bottom,
+        black 0%,
+        black 88%,
+        transparent 100%
+      );
+  }
+
+  .concept-section .menu-showcase-content {
+    left: 24px;
+    right: 24px;
+    bottom: 34px;
+  }
+
+}

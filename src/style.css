@@ -727,3 +727,13 @@ canvas {
     transition-duration: 0.01ms !important;
   }
 }
+/* =========================================================
+   AJUSTE DE RITMO — SEGUNDA CENA
+========================================================= */
+
+.concept-section {
+  min-height: 78svh;
+  align-items: flex-start;
+  padding-top: 90px;
+  padding-bottom: 120px;
+}

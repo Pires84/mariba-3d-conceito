@@ -1856,3 +1856,1206 @@ gsap.fromTo(
     },
   }
 )
+
+/* =========================================================
+   CHATBOT MARIBÁ — PRIMEIRA VERSÃO
+   Interface + respostas locais + voz do navegador.
+   Depois este bloco pode ser conectado à API da IA.
+========================================================= */
+
+const chatMarkup = `
+  <button
+    class="mariba-chat-launcher"
+    id="mariba-chat-launcher"
+    type="button"
+    aria-label="Abrir assistente do Maribá"
+    aria-expanded="false"
+  >
+    <img
+      src="./images/logo-mariba.jpg"
+      alt=""
+      aria-hidden="true"
+    >
+  </button>
+
+  <section
+    class="mariba-chat-panel"
+    id="mariba-chat-panel"
+    aria-label="Assistente virtual do Maribá"
+    aria-hidden="true"
+  >
+    <header class="mariba-chat-header">
+      <img
+        class="mariba-chat-header-logo"
+        src="./images/logo-mariba.jpg"
+        alt="Maribá Espetinhos"
+      >
+
+      <div class="mariba-chat-header-copy">
+        <strong>Maribá Assistant</strong>
+        <small>
+          <span class="mariba-chat-status-dot"></span>
+          Atendimento digital
+        </small>
+      </div>
+
+      <button
+        class="mariba-chat-close"
+        id="mariba-chat-close"
+        type="button"
+        aria-label="Fechar assistente"
+      >
+        ×
+      </button>
+    </header>
+
+    <div
+      class="mariba-chat-body"
+      id="mariba-chat-body"
+      aria-live="polite"
+    >
+      <div class="mariba-chat-message is-bot">
+        <div class="mariba-chat-bubble">
+          Olá! 👋 Eu sou o assistente do Maribá. Posso ajudar com cardápio, sugestões e pedidos. Você também pode falar comigo pelo microfone.
+        </div>
+      </div>
+
+      <div class="mariba-chat-quick-actions">
+        <button class="mariba-chat-chip" type="button" data-chat-prompt="Quero ver o cardápio">
+          🍢 Ver cardápio
+        </button>
+
+        <button class="mariba-chat-chip" type="button" data-chat-prompt="Me recomende algo">
+          ✨ Me recomende algo
+        </button>
+
+        <button class="mariba-chat-chip" type="button" data-chat-prompt="Quero fazer um pedido">
+          🛒 Fazer pedido
+        </button>
+      </div>
+    </div>
+
+    <form
+      class="mariba-chat-composer"
+      id="mariba-chat-form"
+    >
+      <div class="mariba-chat-input-wrap">
+        <input
+          class="mariba-chat-input"
+          id="mariba-chat-input"
+          type="text"
+          placeholder="Digite sua mensagem..."
+          autocomplete="off"
+          aria-label="Mensagem para o assistente"
+        >
+
+        <button
+          class="mariba-chat-icon-button mariba-chat-voice"
+          id="mariba-chat-voice"
+          type="button"
+          aria-label="Falar com o assistente"
+          title="Falar"
+        >
+          🎙️
+        </button>
+
+        <button
+          class="mariba-chat-icon-button mariba-chat-send"
+          type="submit"
+          aria-label="Enviar mensagem"
+          title="Enviar"
+        >
+          ➜
+        </button>
+      </div>
+
+      <div class="mariba-chat-footer-row">
+        <span>Modo demonstração • dados fictícios</span>
+
+        <button
+          class="mariba-chat-sound-toggle is-active"
+          id="mariba-chat-sound-toggle"
+          type="button"
+          aria-pressed="true"
+        >
+          🔊 voz ativa
+        </button>
+      </div>
+    </form>
+  </section>
+`
+
+document.body.insertAdjacentHTML('beforeend', chatMarkup)
+
+const chatLauncher = document.querySelector('#mariba-chat-launcher')
+const chatPanel = document.querySelector('#mariba-chat-panel')
+const chatClose = document.querySelector('#mariba-chat-close')
+const chatBody = document.querySelector('#mariba-chat-body')
+const chatForm = document.querySelector('#mariba-chat-form')
+const chatInput = document.querySelector('#mariba-chat-input')
+const chatVoice = document.querySelector('#mariba-chat-voice')
+const chatSoundToggle = document.querySelector('#mariba-chat-sound-toggle')
+const chatChips = document.querySelectorAll('[data-chat-prompt]')
+
+let chatIsOpen = false
+let chatSoundEnabled = true
+let chatRecognition = null
+let chatIsListening = false
+let chatPreviousResponseId = null
+
+function setChatOpen(nextState) {
+  chatIsOpen = nextState
+
+  chatPanel.classList.toggle('is-open', chatIsOpen)
+  chatLauncher.classList.toggle('is-open', chatIsOpen)
+
+  chatLauncher.setAttribute('aria-expanded', String(chatIsOpen))
+  chatPanel.setAttribute('aria-hidden', String(!chatIsOpen))
+
+  if (chatIsOpen) {
+    setTimeout(() => chatInput.focus(), 120)
+  }
+}
+
+chatLauncher.addEventListener('click', () => {
+  setChatOpen(!chatIsOpen)
+})
+
+chatClose.addEventListener('click', () => {
+  setChatOpen(false)
+})
+
+function scrollChatToBottom() {
+  chatBody.scrollTop = chatBody.scrollHeight
+}
+
+function appendChatMessage(text, sender = 'bot') {
+  const wrapper = document.createElement('div')
+  wrapper.className = `mariba-chat-message ${sender === 'user' ? 'is-user' : 'is-bot'}`
+
+  const bubble = document.createElement('div')
+  bubble.className = 'mariba-chat-bubble'
+  bubble.textContent = text
+
+  wrapper.appendChild(bubble)
+  chatBody.appendChild(wrapper)
+
+  scrollChatToBottom()
+
+  if (sender === 'bot' && chatSoundEnabled) {
+    speakChatResponse(text)
+  }
+}
+
+function detectChatLanguage(text) {
+  const value = text
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+
+  // Português do Brasil é sempre o idioma principal.
+  // Só trocamos de idioma quando houver sinais claros
+  // de inglês ou espanhol na mensagem do usuário.
+
+  const spanishHints = [
+    'hola',
+    'quiero',
+    'quisiera',
+    'gracias',
+    'por favor',
+    'recomienda',
+    'recomiendame',
+    'donde',
+    'cuanto',
+    'bebida',
+    'comida',
+    'hacer un pedido',
+    'quiero pedir'
+  ]
+
+  const englishHints = [
+    'hello',
+    'hi',
+    'hey',
+    'i want',
+    'i would like',
+    'please',
+    'thank you',
+    'thanks',
+    'recommend',
+    'where',
+    'how much',
+    'food',
+    'drink',
+    'place an order',
+    'make an order'
+  ]
+
+  const portugueseHints = [
+    'ola',
+    'oi',
+    'quero',
+    'gostaria',
+    'obrigado',
+    'obrigada',
+    'por favor',
+    'recomenda',
+    'recomende',
+    'onde',
+    'quanto',
+    'cardapio',
+    'pedido',
+    'pedir',
+    'comida',
+    'bebida'
+  ]
+
+  const ptScore = portugueseHints.filter((word) => value.includes(word)).length
+  const esScore = spanishHints.filter((word) => value.includes(word)).length
+  const enScore = englishHints.filter((word) => value.includes(word)).length
+
+  if (enScore >= 1 && enScore > ptScore && enScore > esScore) {
+    return 'en'
+  }
+
+  if (esScore >= 1 && esScore > ptScore && esScore > enScore) {
+    return 'es'
+  }
+
+  return 'pt'
+}
+const demoCatalog = [
+  { id: 'carne', name: 'Espetinho de carne', price: 14.9, aliases: ['carne', 'espetinho de carne'] },
+  { id: 'frango', name: 'Espetinho de frango', price: 12.9, aliases: ['frango', 'espetinho de frango'] },
+  { id: 'linguica', name: 'Espetinho de linguiça', price: 11.9, aliases: ['linguica', 'espetinho de linguica'] },
+  { id: 'coracao', name: 'Espetinho de coração', price: 13.9, aliases: ['coracao', 'espetinho de coracao'] },
+  { id: 'kafta', name: 'Kafta', price: 14.9, aliases: ['kafta'] },
+  { id: 'queijo', name: 'Queijo coalho', price: 13.9, aliases: ['queijo coalho', 'queijo'] },
+  { id: 'pao-alho', name: 'Pão de alho', price: 9.9, aliases: ['pao de alho'] },
+  { id: 'mandioca', name: 'Mandioca', price: 12, aliases: ['mandioca'] },
+  { id: 'vinagrete', name: 'Vinagrete', price: 6, aliases: ['vinagrete'] },
+  { id: 'farofa', name: 'Farofa', price: 5, aliases: ['farofa'] },
+  { id: 'chopp-300', name: 'Chopp 300 ml', price: 8.9, aliases: ['chopp de 300 ml', 'chopp 300 ml', 'chopp de 300', 'chopp 300', 'chopp pequeno'] },
+  { id: 'chopp-500', name: 'Chopp 500 ml', price: 12.9, aliases: ['chopp de 500 ml', 'chopp 500 ml', 'chopp de 500', 'chopp 500', 'chopp grande'] },
+  { id: 'refrigerante', name: 'Refrigerante lata', price: 6, aliases: ['refrigerante', 'refri'] },
+  { id: 'agua', name: 'Água 500 ml', price: 4, aliases: ['agua', 'agua 500', 'agua 500 ml'] },
+]
+
+const demoOrder = {
+  active: false,
+  finalized: false,
+  items: {},
+  service: null,
+  checkoutStep: null,
+  customer: {
+    name: '',
+    address: '',
+    payment: '',
+  },
+}
+
+function normalizeChatText(value) {
+  return String(value || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+}
+
+function formatBRL(value) {
+  return value.toLocaleString('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+  })
+}
+
+function getOrderSubtotal() {
+  return Object.values(demoOrder.items).reduce(
+    (total, item) => total + item.price * item.quantity,
+    0
+  )
+}
+
+function getDeliveryFee() {
+  if (demoOrder.service !== 'delivery') return 0
+  return getOrderSubtotal() >= 80 ? 0 : 6
+}
+
+function getOrderTotal() {
+  return getOrderSubtotal() + getDeliveryFee()
+}
+
+function resetDemoOrder() {
+  demoOrder.active = false
+  demoOrder.finalized = false
+  demoOrder.items = {}
+  demoOrder.service = null
+  demoOrder.checkoutStep = null
+  demoOrder.customer = {
+    name: '',
+    address: '',
+    payment: '',
+  }
+}
+
+function addDemoOrderItem(product, quantity) {
+  if (!Number.isFinite(quantity) || quantity <= 0) return
+
+  demoOrder.finalized = false
+
+  if (!demoOrder.items[product.id]) {
+    demoOrder.items[product.id] = {
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      quantity: 0,
+    }
+  }
+
+  demoOrder.items[product.id].quantity += quantity
+}
+
+function removeDemoOrderItem(product, quantity = null) {
+  demoOrder.finalized = false
+
+  const current = demoOrder.items[product.id]
+  if (!current) return false
+
+  if (quantity === null || quantity >= current.quantity) {
+    delete demoOrder.items[product.id]
+    return true
+  }
+
+  current.quantity -= quantity
+  return true
+}
+
+function setDemoOrderItemQuantity(product, quantity) {
+  if (!Number.isFinite(quantity) || quantity < 0) return false
+
+  demoOrder.finalized = false
+
+  if (quantity === 0) {
+    delete demoOrder.items[product.id]
+    return true
+  }
+
+  demoOrder.items[product.id] = {
+    id: product.id,
+    name: product.name,
+    price: product.price,
+    quantity,
+  }
+
+  return true
+}
+
+function findProductInMessage(message) {
+  const text = normalizeChatText(message)
+
+  for (const product of demoCatalog) {
+    const sortedAliases = [...product.aliases].sort((a, b) => b.length - a.length)
+    const alias = sortedAliases.find((candidate) => text.includes(candidate))
+
+    if (alias) {
+      return { product, alias }
+    }
+  }
+
+  return null
+}
+
+function getRequestedNewQuantity(message, alias) {
+  const text = normalizeChatText(message)
+  const escaped = alias.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+
+  const patterns = [
+    new RegExp(`(?:alterar|mudar|ajustar|trocar)\\s+(?:a\\s+quantidade\\s+(?:de\\s+)?)?${escaped}\\s+(?:para|pra|por)\\s+(\\d+)`),
+    new RegExp(`(?:alterar|mudar|ajustar|trocar)\\s+(?:a\\s+quantidade\\s+)?(?:para|pra)\\s+(\\d+)\\s+(?:de\\s+)?${escaped}`),
+    new RegExp(`(?:deixa|deixar|deixe)\\s+(?:o\\s+pedido\\s+com\\s+)?(\\d+)\\s+(?:x\\s+)?${escaped}`),
+    new RegExp(`(?:ficar|fica|fique)\\s+com\\s+(\\d+)\\s+(?:x\\s+)?${escaped}`),
+  ]
+
+  for (const pattern of patterns) {
+    const match = text.match(pattern)
+    if (match) return Number(match[1])
+  }
+
+  return null
+}
+
+function findQuantityForAlias(text, alias) {
+  const escaped = alias.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const before = new RegExp(`(\\d+)\\s*(?:x|unidades?|unidade|de)?\\s*${escaped}(?!\\w)`)
+  const after = new RegExp(`${escaped}(?!\\w)\\s*(?:x|unidades?|unidade)?\\s*(\\d+)`)
+  const beforeMatch = text.match(before)
+  const afterMatch = text.match(after)
+
+  if (beforeMatch) return Number(beforeMatch[1])
+  if (afterMatch) return Number(afterMatch[1])
+  return 1
+}
+
+function extractDemoItems(message) {
+  const text = normalizeChatText(message)
+  const matches = []
+
+  for (const product of demoCatalog) {
+    const sortedAliases = [...product.aliases].sort((a, b) => b.length - a.length)
+    const alias = sortedAliases.find((candidate) => text.includes(candidate))
+
+    if (!alias) continue
+
+    matches.push({
+      product,
+      quantity: findQuantityForAlias(text, alias),
+    })
+  }
+
+  return matches
+}
+
+function buildOrderSummary({ includeService = true } = {}) {
+  const items = Object.values(demoOrder.items)
+
+  if (!items.length) {
+    return 'Seu pedido demonstrativo ainda está vazio.'
+  }
+
+  const lines = items.map((item) => {
+    const subtotal = item.price * item.quantity
+    return `${item.quantity}x ${item.name} — ${formatBRL(subtotal)}`
+  })
+
+  const subtotal = getOrderSubtotal()
+  const details = [`Pedido demonstrativo:\n\n${lines.join('\n')}`, `\nSubtotal: ${formatBRL(subtotal)}`]
+
+  if (includeService && demoOrder.service === 'delivery') {
+    const fee = getDeliveryFee()
+    details.push(fee === 0 ? '\nEntrega: grátis' : `\nEntrega: ${formatBRL(fee)}`)
+    details.push(`\nTotal: ${formatBRL(getOrderTotal())}`)
+  } else if (includeService && demoOrder.service === 'pickup') {
+    details.push('\nRetirada no local')
+    details.push(`\nTotal: ${formatBRL(getOrderTotal())}`)
+  } else {
+    details.push(`\nTotal dos itens: ${formatBRL(subtotal)}`)
+  }
+
+  return details.join('')
+}
+
+function shouldHandleLocally(message) {
+  const text = normalizeChatText(message)
+  const hasCatalogItem = demoCatalog.some((product) =>
+    product.aliases.some((alias) => text.includes(alias))
+  )
+
+  return (
+    demoOrder.active ||
+    hasCatalogItem ||
+    text.includes('pedido') ||
+    text.includes('pedir') ||
+    text.includes('carrinho') ||
+    text.includes('quanto fica') ||
+    text.includes('quanto da') ||
+    text.includes('total') ||
+    text.includes('calcula') ||
+    text.includes('calcule') ||
+    text.includes('retirada') ||
+    text.includes('retirar') ||
+    text.includes('delivery') ||
+    text.includes('entrega') ||
+    text.includes('remover') ||
+    text.includes('tirar') ||
+    text.includes('cancelar pedido') ||
+    text.includes('limpar pedido') ||
+    text.includes('alterar') ||
+    text.includes('mudar') ||
+    text.includes('ajustar') ||
+    text.includes('trocar') ||
+    text.includes('finalizar') ||
+    text.includes('concluir pedido') ||
+    text.includes('fechar pedido')
+  )
+}
+
+function getPaymentLabel(text) {
+  if (text.includes('pix')) return 'Pix'
+  if (text.includes('dinheiro')) return 'Dinheiro'
+  if (text.includes('debito') || text.includes('cartao de debito')) return 'Cartão de débito'
+  if (text.includes('credito') || text.includes('cartao de credito')) return 'Cartão de crédito'
+  return null
+}
+
+function buildCheckoutSummary() {
+  const serviceLabel = demoOrder.service === 'delivery' ? 'Entrega' : 'Retirada no local'
+  const customerLines = [
+    `Nome: ${demoOrder.customer.name || 'não informado'}`,
+    `Atendimento: ${serviceLabel}`,
+  ]
+
+  if (demoOrder.service === 'delivery') {
+    customerLines.push(`Endereço: ${demoOrder.customer.address || 'não informado'}`)
+  }
+
+  customerLines.push(`Pagamento: ${demoOrder.customer.payment || 'não informado'}`)
+
+  return `${buildOrderSummary()}\n\n${customerLines.join('\n')}`
+}
+
+function beginDemoCheckout() {
+  demoOrder.active = true
+  demoOrder.finalized = false
+  demoOrder.checkoutStep = 'name'
+  demoOrder.customer.name = ''
+  demoOrder.customer.address = ''
+  demoOrder.customer.payment = ''
+
+  return `${buildOrderSummary()}\n\nPerfeito! Vamos concluir a simulação. Qual é o seu nome?`
+}
+
+function handleDemoOrderConversation(message) {
+  const text = normalizeChatText(message)
+  const cleanMessage = String(message || '').trim()
+
+  if (
+    text.includes('cancelar pedido') ||
+    text.includes('limpar pedido') ||
+    text.includes('zerar pedido') ||
+    text.includes('recomecar pedido') ||
+    text.includes('recomecar o pedido')
+  ) {
+    resetDemoOrder()
+    return 'Pedido demonstrativo limpo. Quando quiser começar de novo, é só dizer “quero fazer um pedido”.'
+  }
+
+  // =========================================================
+  // CHECKOUT CONVERSACIONAL
+  // =========================================================
+
+  if (demoOrder.checkoutStep === 'name') {
+    if (cleanMessage.length < 2) {
+      return 'Não consegui identificar o nome. Pode me dizer seu nome, por favor?'
+    }
+
+    demoOrder.customer.name = cleanMessage
+
+    if (demoOrder.service === 'delivery') {
+      demoOrder.checkoutStep = 'address'
+      return `Prazer, ${demoOrder.customer.name} 😊 Qual é o endereço para a entrega?\n\nComo estamos em modo demonstração, use um endereço fictício para este teste.`
+    }
+
+    demoOrder.checkoutStep = 'payment'
+    return `Prazer, ${demoOrder.customer.name} 😊 Como deseja pagar?\n\nPode escolher: Pix, dinheiro, cartão de débito ou cartão de crédito.`
+  }
+
+  if (demoOrder.checkoutStep === 'address') {
+    if (cleanMessage.length < 5) {
+      return 'Preciso de um endereço um pouco mais completo para a simulação. Por exemplo: “Rua Exemplo, 123”.'
+    }
+
+    demoOrder.customer.address = cleanMessage
+    demoOrder.checkoutStep = 'payment'
+
+    return 'Endereço anotado. Como deseja pagar?\n\nPode escolher: Pix, dinheiro, cartão de débito ou cartão de crédito.'
+  }
+
+  if (demoOrder.checkoutStep === 'payment') {
+    const payment = getPaymentLabel(text)
+
+    if (!payment) {
+      return 'Para esta demonstração, escolha uma destas formas de pagamento: Pix, dinheiro, cartão de débito ou cartão de crédito.'
+    }
+
+    demoOrder.customer.payment = payment
+    demoOrder.checkoutStep = 'confirm'
+
+    return `Confira a simulação antes de concluir:\n\n${buildCheckoutSummary()}\n\nSe estiver tudo certo, diga “confirmar”. Se quiser voltar ao carrinho, diga “alterar pedido”.\n\nNenhum pedido real será enviado.`
+  }
+
+  if (demoOrder.checkoutStep === 'confirm') {
+    if (
+      text.includes('alterar pedido') ||
+      text.includes('voltar ao carrinho') ||
+      text.includes('mudar pedido')
+    ) {
+      demoOrder.checkoutStep = null
+      demoOrder.active = true
+      return `${buildOrderSummary()}\n\nVoltamos ao carrinho. Você pode adicionar, remover ou alterar itens. Quando terminar, diga “finalizar pedido”.`
+    }
+
+    if (
+      text === 'confirmar' ||
+      text.includes('confirmar pedido') ||
+      text.includes('confirmo') ||
+      text.includes('pode confirmar')
+    ) {
+      demoOrder.checkoutStep = null
+      demoOrder.active = false
+      demoOrder.finalized = true
+
+      return `${buildCheckoutSummary()}\n\n✅ Simulação finalizada. Nenhum pedido foi enviado, pago ou confirmado de verdade.\n\nPara começar outra simulação, diga “quero fazer um pedido”.`
+    }
+
+    return 'Para concluir esta simulação, diga “confirmar”. Se quiser mexer nos itens, diga “alterar pedido”.'
+  }
+
+  if (
+    text.includes('quero fazer um pedido') ||
+    text === 'fazer pedido' ||
+    text === 'pedido'
+  ) {
+    if (demoOrder.finalized) {
+      resetDemoOrder()
+    }
+
+    demoOrder.active = true
+
+    if (Object.keys(demoOrder.items).length) {
+      return `${buildOrderSummary({ includeService: false })}\n\nSeu carrinho já tem esses itens. Você pode adicionar mais, remover algum item, alterar quantidades ou escolher entrega/retirada.`
+    }
+
+    return 'Claro! 🛒 Vamos montar uma simulação. Me diga os itens e as quantidades. Exemplo: “2 carne e 2 frango”.'
+  }
+
+  const wantsQuantityChange =
+    text.includes('alterar') ||
+    text.includes('mudar') ||
+    text.includes('ajustar') ||
+    text.includes('trocar') ||
+    text.includes('deixa ') ||
+    text.includes('deixar ') ||
+    text.includes('deixe ') ||
+    text.includes('ficar com') ||
+    text.includes('fica com')
+
+  if (wantsQuantityChange) {
+    const found = findProductInMessage(message)
+
+    if (!found) {
+      return 'Diga qual item você quer alterar. Exemplo: “mudar frango para 3”.'
+    }
+
+    const { product, alias } = found
+    const newQuantity = getRequestedNewQuantity(message, alias)
+
+    if (newQuantity === null) {
+      return `Entendi que você quer alterar ${product.name}. Diga a nova quantidade, por exemplo: “mudar ${alias} para 3”.`
+    }
+
+    demoOrder.checkoutStep = null
+
+    if (!demoOrder.items[product.id] && newQuantity > 0) {
+      setDemoOrderItemQuantity(product, newQuantity)
+      demoOrder.active = true
+
+      return `Certo. Adicionei ${newQuantity}x ${product.name} ao pedido.\n\n${buildOrderSummary({ includeService: false })}\n\nQuer alterar mais alguma coisa ou escolher entrega/retirada?`
+    }
+
+    setDemoOrderItemQuantity(product, newQuantity)
+    demoOrder.active = true
+
+    if (newQuantity === 0) {
+      if (!Object.keys(demoOrder.items).length) {
+        return `Removi ${product.name}. Seu pedido demonstrativo ficou vazio.`
+      }
+
+      return `Removi ${product.name}.\n\n${buildOrderSummary({ includeService: false })}\n\nQuer ajustar mais alguma coisa?`
+    }
+
+    return `Quantidade atualizada: ${newQuantity}x ${product.name}.\n\n${buildOrderSummary({ includeService: false })}\n\nQuer ajustar mais alguma coisa ou escolher entrega/retirada?`
+  }
+
+  const extractedItems = extractDemoItems(message)
+  const isRemoval = text.includes('remov') || text.includes('tira') || text.includes('retira do pedido')
+
+  if (extractedItems.length) {
+    demoOrder.active = true
+    demoOrder.finalized = false
+    demoOrder.checkoutStep = null
+
+    if (isRemoval) {
+      const removed = []
+
+      for (const { product, quantity } of extractedItems) {
+        if (removeDemoOrderItem(product, quantity)) {
+          removed.push(product.name)
+        }
+      }
+
+      if (!removed.length) {
+        return 'Não encontrei esse item no seu pedido demonstrativo.'
+      }
+
+      if (!Object.keys(demoOrder.items).length) {
+        return `Removi ${removed.join(', ')}. Seu pedido demonstrativo ficou vazio.`
+      }
+
+      return `Pronto, ajustei o pedido.\n\n${buildOrderSummary({ includeService: false })}\n\nQuer adicionar mais alguma coisa, alterar quantidades ou escolher entrega/retirada?`
+    }
+
+    for (const { product, quantity } of extractedItems) {
+      addDemoOrderItem(product, quantity)
+    }
+
+    return `${buildOrderSummary({ includeService: false })}\n\nQuer adicionar mais alguma coisa? Você também pode dizer “mudar carne para 3”. Se estiver tudo certo, diga “entrega” ou “retirada”.`
+  }
+
+  if (text.includes('entrega') || text.includes('delivery')) {
+    demoOrder.active = true
+    demoOrder.finalized = false
+    demoOrder.checkoutStep = null
+
+    if (!Object.keys(demoOrder.items).length) {
+      return 'Fazemos entrega no modo demonstração, mas seu pedido ainda está vazio. Me diga primeiro o que você quer pedir.'
+    }
+
+    demoOrder.service = 'delivery'
+    const fee = getDeliveryFee()
+
+    return `${buildOrderSummary()}\n\n${fee === 0 ? 'Como o subtotal passou de R$ 80,00, a entrega ficou grátis.' : 'A taxa demonstrativa de entrega é R$ 6,00.'}\nPrazo fictício: 35 a 55 minutos. Se estiver tudo certo, diga “finalizar pedido”.`
+  }
+
+  if (
+    text.includes('retirada') ||
+    text.includes('retirar') ||
+    text.includes('buscar') ||
+    text.includes('balcao')
+  ) {
+    demoOrder.active = true
+    demoOrder.finalized = false
+    demoOrder.checkoutStep = null
+
+    if (!Object.keys(demoOrder.items).length) {
+      return 'A retirada no local está disponível no modo demonstração, mas seu pedido ainda está vazio. Me diga primeiro o que você quer pedir.'
+    }
+
+    demoOrder.service = 'pickup'
+    return `${buildOrderSummary()}\n\nPrazo fictício para retirada: 20 a 30 minutos. Se estiver tudo certo, diga “finalizar pedido”.`
+  }
+
+  if (
+    text.includes('finalizar pedido') ||
+    text.includes('finaliza pedido') ||
+    text.includes('concluir pedido') ||
+    text.includes('fechar pedido') ||
+    text === 'finalizar'
+  ) {
+    if (!Object.keys(demoOrder.items).length) {
+      return 'Seu pedido demonstrativo está vazio. Adicione alguns itens antes de finalizar.'
+    }
+
+    if (!demoOrder.service) {
+      demoOrder.active = true
+      return `${buildOrderSummary({ includeService: false })}\n\nAntes de continuar, escolha “entrega” ou “retirada”.`
+    }
+
+    return beginDemoCheckout()
+  }
+
+  if (
+    text.includes('total') ||
+    text.includes('quanto fica') ||
+    text.includes('quanto da') ||
+    text.includes('calcula') ||
+    text.includes('calcule') ||
+    text.includes('resumo') ||
+    text.includes('carrinho') ||
+    text.includes('ver pedido')
+  ) {
+    return `${buildOrderSummary()}\n\nOs valores são fictícios e usados apenas no modo demonstração.`
+  }
+
+  if (demoOrder.active) {
+    return 'Seu pedido demonstrativo continua aberto. Você pode adicionar itens, dizer “remover 1 frango”, “mudar carne para 3”, “ver carrinho”, “entrega”, “retirada”, “finalizar pedido” ou “limpar pedido”.'
+  }
+
+  if (demoOrder.finalized) {
+    return 'A última simulação já foi finalizada. Nenhum pedido real foi enviado. Para montar outro pedido, diga “quero fazer um pedido”.'
+  }
+
+  return null
+}
+
+function createLocalChatResponse(message) {
+  const text = normalizeChatText(message)
+  const language = detectChatLanguage(message)
+
+  if (language === 'en') {
+    if (text.includes('menu')) {
+      return 'Sure! In demo mode we have beef, chicken, sausage, chicken heart, kafta and grilled cheese skewers, plus sides, soft drinks and draft beer. These are fictional demonstration data.'
+    }
+    if (text.includes('recommend')) {
+      return 'For two people, I’d suggest our demo Couple Combo: 4 skewers of your choice, cassava and two 300 ml draft beers for R$ 69.90. The price and items are fictional demo data.'
+    }
+    if (text.includes('hour') || text.includes('open')) {
+      return 'Demo opening hours: Tuesday to Thursday from 6 PM to 11 PM, Friday and Saturday from 6 PM to midnight, Sunday from 6 PM to 11 PM, and Monday closed.'
+    }
+    return 'Sure! I can help with our demo menu, prices, opening hours, delivery, payment methods and recommendations.'
+  }
+
+  if (language === 'es') {
+    if (text.includes('menu')) {
+      return '¡Claro! En el modo demostración tenemos espetinhos de carne, pollo, linguiça, corazón, kafta y queso coalho, además de acompañamientos, bebidas y chopp. Los datos son ficticios.'
+    }
+    if (text.includes('recom')) {
+      return 'Para dos personas, te recomendaría el Combo Casal de demostración: 4 espetinhos a elección, mandioca y 2 chopps de 300 ml por R$ 69,90. Son datos ficticios.'
+    }
+    return '¡Claro! Puedo ayudarte con el menú de demostración, precios, horarios, entrega, formas de pago y recomendaciones.'
+  }
+
+  const orderResponse = handleDemoOrderConversation(message)
+  if (orderResponse) return orderResponse
+
+  if (
+    text === 'oi' ||
+    text === 'ola' ||
+    text.includes('bom dia') ||
+    text.includes('boa tarde') ||
+    text.includes('boa noite')
+  ) {
+    return 'Oi! 😊 Seja bem-vindo ao Maribá. Estou funcionando em modo demonstração com dados fictícios. Posso te mostrar o cardápio, recomendar algo, informar horários ou ajudar a montar um pedido.'
+  }
+
+  if (
+    text.includes('oficial') ||
+    text.includes('dados reais') ||
+    text.includes('informacoes reais') ||
+    text.includes('preco real') ||
+    text.includes('precos reais')
+  ) {
+    return 'Neste momento estou em modo demonstração. Cardápio, preços, horários, entrega e demais informações usadas no atendimento são fictícios e servem apenas para testar o projeto.'
+  }
+
+  if (
+    text.includes('duas pessoas') ||
+    text.includes('2 pessoas') ||
+    text.includes('casal') ||
+    ((text.includes('recom') || text.includes('sugest')) && text.includes('dois'))
+  ) {
+    return 'Para duas pessoas, eu iria de Combo Casal 😊 Ele vem com 4 espetinhos à escolha, mandioca e 2 chopps de 300 ml por R$ 69,90. É uma combinação fictícia criada para a demonstração.'
+  }
+
+  if (
+    text.includes('recom') ||
+    text.includes('sugest') ||
+    text.includes('o que comer') ||
+    text.includes('o que pedir')
+  ) {
+    return 'Se quiser uma sugestão bem completa, temos o Combo Casal por R$ 69,90 e o Combo Amigos por R$ 109,90. Se me disser quantas pessoas vão comer e do que vocês gostam, eu consigo sugerir melhor.'
+  }
+
+  if (text.includes('combo')) {
+    return 'Temos dois combos fictícios no modo demonstração:\n\n• Combo Casal — R$ 69,90: 4 espetinhos à escolha + mandioca + 2 chopps de 300 ml.\n• Combo Amigos — R$ 109,90: 8 espetinhos + mandioca + farofa + vinagrete.'
+  }
+
+  if (
+    text.includes('horario') ||
+    text.includes('abre') ||
+    text.includes('aberto') ||
+    text.includes('fecha') ||
+    text.includes('funcionamento')
+  ) {
+    return 'No modo demonstração, o horário é:\n\n• Segunda: fechado\n• Terça a quinta: 18h às 23h\n• Sexta e sábado: 18h à meia-noite\n• Domingo: 18h às 23h\n\nEsses horários são fictícios para teste.'
+  }
+
+  if (
+    text.includes('pagamento') ||
+    text.includes('pagar') ||
+    text.includes('pix') ||
+    text.includes('cartao') ||
+    text.includes('dinheiro')
+  ) {
+    return 'No modo demonstração aceitamos Pix, dinheiro, cartão de débito e cartão de crédito.'
+  }
+
+  if (
+    text.includes('endereco') ||
+    text.includes('onde fica') ||
+    text.includes('localizacao')
+  ) {
+    return 'O endereço usado nesta demonstração é Rua Vallins, 417, Centro, Aguaí. Antes da publicação definitiva, confirmaremos os dados oficiais do estabelecimento.'
+  }
+
+  if (
+    text.includes('alerg') ||
+    text.includes('gluten') ||
+    text.includes('lactose') ||
+    text.includes('leite')
+  ) {
+    return 'No cadastro demonstrativo, queijo coalho contém leite; pão de alho contém glúten e leite; e o chopp está marcado com glúten. Para qualquer alergia ou restrição alimentar, a confirmação direta com o estabelecimento continua sendo recomendada.'
+  }
+
+  if (
+    text.includes('cardapio') ||
+    text.includes('menu') ||
+    text.includes('espetinho') ||
+    text.includes('espetinhos')
+  ) {
+    return 'No cardápio demonstrativo temos:\n\n🥩 Carne — R$ 14,90\n🍗 Frango — R$ 12,90\n🌭 Linguiça — R$ 11,90\n❤️ Coração — R$ 13,90\n🔥 Kafta — R$ 14,90\n🧀 Queijo coalho — R$ 13,90\n🥖 Pão de alho — R$ 9,90\n\nTambém temos acompanhamentos, bebidas e combos. Todos os preços são fictícios para demonstração.'
+  }
+
+  if (
+    text.includes('chopp') ||
+    text.includes('bebida') ||
+    text.includes('refrigerante') ||
+    text.includes('agua')
+  ) {
+    return 'Nas bebidas do modo demonstração temos chopp de 300 ml por R$ 8,90, chopp de 500 ml por R$ 12,90, refrigerante em lata por R$ 6,00 e água de 500 ml por R$ 4,00.'
+  }
+
+  if (
+    text.includes('mandioca') ||
+    text.includes('farofa') ||
+    text.includes('vinagrete') ||
+    text.includes('acompanhamento')
+  ) {
+    return 'Os acompanhamentos demonstrativos são: mandioca por R$ 12,00, vinagrete por R$ 6,00 e farofa por R$ 5,00.'
+  }
+
+  return 'Posso te ajudar com o cardápio, preços, combos, horários, entrega, pagamento, endereço ou montar uma simulação de pedido. 😊 O que você gostaria de saber?'
+}
+
+function getBestChatVoice(language = 'pt') {
+  if (!('speechSynthesis' in window)) {
+    return null
+  }
+
+  const voices = window.speechSynthesis.getVoices()
+
+  if (!voices.length) {
+    return null
+  }
+
+  const preferredLanguages =
+    language === 'en'
+      ? ['en-US', 'en-GB']
+      : language === 'es'
+        ? ['es-ES', 'es-MX', 'es-US']
+        : ['pt-BR', 'pt-PT']
+
+  const preferredNames =
+    language === 'pt'
+      ? ['francisca', 'antônio', 'antonio', 'luciana', 'felipe', 'google português', 'microsoft']
+      : language === 'es'
+        ? ['helena', 'elvira', 'jorge', 'google español', 'microsoft']
+        : ['aria', 'jenny', 'guy', 'google us english', 'microsoft']
+
+  const languageMatches = voices.filter((voice) =>
+    preferredLanguages.some((lang) =>
+      voice.lang.toLowerCase().startsWith(lang.toLowerCase())
+    )
+  )
+
+  const namedVoice = languageMatches.find((voice) =>
+    preferredNames.some((name) =>
+      voice.name.toLowerCase().includes(name)
+    )
+  )
+
+  return namedVoice || languageMatches[0] || voices[0]
+}
+
+function speakChatResponse(text) {
+  if (!('speechSynthesis' in window)) {
+    return
+  }
+
+  const language = detectChatLanguage(text)
+  const utterance = new SpeechSynthesisUtterance(text)
+
+  utterance.lang =
+    language === 'en'
+      ? 'en-US'
+      : language === 'es'
+        ? 'es-ES'
+        : 'pt-BR'
+
+  const selectedVoice = getBestChatVoice(language)
+
+  if (selectedVoice) {
+    utterance.voice = selectedVoice
+  }
+
+  // Um pouco mais lento e menos agudo deixa a fala menos "sintética".
+  utterance.rate =
+    language === 'pt'
+      ? 0.94
+      : 0.96
+
+  utterance.pitch = 0.98
+  utterance.volume = 1
+
+  window.speechSynthesis.cancel()
+
+  window.setTimeout(() => {
+    window.speechSynthesis.speak(utterance)
+  }, 80)
+}
+
+function showChatTyping() {
+  const wrapper = document.createElement('div')
+  wrapper.className = 'mariba-chat-message is-bot'
+  wrapper.dataset.typing = 'true'
+
+  const bubble = document.createElement('div')
+  bubble.className = 'mariba-chat-bubble'
+  bubble.textContent = 'Só um instante…'
+
+  wrapper.appendChild(bubble)
+  chatBody.appendChild(wrapper)
+  scrollChatToBottom()
+
+  return wrapper
+}
+
+async function getAIChatResponse(message) {
+  const response = await fetch('/api/chat', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      message,
+      previousResponseId: chatPreviousResponseId,
+    }),
+  })
+
+  const data = await response.json()
+
+  if (!response.ok) {
+    throw new Error(data.error || 'Não foi possível consultar a IA.')
+  }
+
+  if (data.responseId) {
+    chatPreviousResponseId = data.responseId
+  }
+
+  return data.message
+}
+
+async function sendChatMessage(message) {
+  const cleanMessage = message.trim()
+
+  if (!cleanMessage) {
+    return
+  }
+
+  appendChatMessage(cleanMessage, 'user')
+  chatInput.value = ''
+
+  const typingMessage = showChatTyping()
+
+  // Pedidos, carrinho, totais e entrega ficam sob controle do próprio site.
+  // Assim, preços e cálculos não dependem da IA e continuam corretos
+  // mesmo quando a API estiver disponível novamente.
+  if (shouldHandleLocally(cleanMessage)) {
+    window.setTimeout(() => {
+      typingMessage.remove()
+      appendChatMessage(createLocalChatResponse(cleanMessage), 'bot')
+    }, 350)
+    return
+  }
+
+  try {
+    const responseText = await getAIChatResponse(cleanMessage)
+    typingMessage.remove()
+    appendChatMessage(responseText, 'bot')
+  } catch (error) {
+    console.warn('IA indisponível; usando resposta local de segurança.', error)
+
+    window.setTimeout(() => {
+      typingMessage.remove()
+      appendChatMessage(createLocalChatResponse(cleanMessage), 'bot')
+    }, 500)
+  }
+}
+
+chatForm.addEventListener('submit', (event) => {
+  event.preventDefault()
+  sendChatMessage(chatInput.value)
+})
+
+chatChips.forEach((chip) => {
+  chip.addEventListener('click', () => {
+    setChatOpen(true)
+    sendChatMessage(chip.dataset.chatPrompt)
+  })
+})
+
+chatSoundToggle.addEventListener('click', () => {
+  chatSoundEnabled = !chatSoundEnabled
+
+  chatSoundToggle.classList.toggle('is-active', chatSoundEnabled)
+  chatSoundToggle.setAttribute('aria-pressed', String(chatSoundEnabled))
+  chatSoundToggle.textContent =
+    chatSoundEnabled
+      ? '🔊 voz ativa'
+      : '🔇 voz desativada'
+
+  if (!chatSoundEnabled && 'speechSynthesis' in window) {
+    window.speechSynthesis.cancel()
+  }
+})
+
+const SpeechRecognition =
+  window.SpeechRecognition ||
+  window.webkitSpeechRecognition
+
+if (SpeechRecognition) {
+  chatRecognition = new SpeechRecognition()
+
+  chatRecognition.continuous = false
+  chatRecognition.interimResults = false
+  chatRecognition.lang = 'pt-BR'
+
+  chatRecognition.addEventListener('start', () => {
+    chatIsListening = true
+    chatVoice.classList.add('is-listening')
+    chatVoice.textContent = '●'
+    chatVoice.setAttribute('aria-label', 'Ouvindo...')
+  })
+
+  chatRecognition.addEventListener('result', (event) => {
+    const transcript = event.results[0][0].transcript
+    chatInput.value = transcript
+    sendChatMessage(transcript)
+  })
+
+  chatRecognition.addEventListener('end', () => {
+    chatIsListening = false
+    chatVoice.classList.remove('is-listening')
+    chatVoice.textContent = '🎙️'
+    chatVoice.setAttribute('aria-label', 'Falar com o assistente')
+  })
+
+  chatRecognition.addEventListener('error', () => {
+    chatIsListening = false
+    chatVoice.classList.remove('is-listening')
+    chatVoice.textContent = '🎙️'
+
+    appendChatMessage(
+      'Não consegui acessar o microfone. Verifique a permissão do navegador e tente novamente.',
+      'bot'
+    )
+  })
+} else {
+  chatVoice.title = 'Reconhecimento de voz não disponível neste navegador'
+}
+
+chatVoice.addEventListener('click', () => {
+  if (!chatRecognition) {
+    appendChatMessage(
+      'O reconhecimento de voz não está disponível neste navegador. Você ainda pode digitar normalmente.',
+      'bot'
+    )
+
+    return
+  }
+
+  if (chatIsListening) {
+    chatRecognition.stop()
+    return
+  }
+
+  chatRecognition.start()
+})

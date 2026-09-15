@@ -1386,3 +1386,434 @@ canvas {
   text-shadow:
     0 4px 26px rgba(0, 0, 0, 0.95);
 }
+
+/* =========================================================
+   CHATBOT MARIBÁ — BOTÃO FLUTUANTE + JANELA
+========================================================= */
+
+.mariba-chat-launcher {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 80;
+
+  width: 72px;
+  height: 72px;
+
+  padding: 0;
+  border: 1px solid rgba(242, 138, 30, 0.72);
+  border-radius: 50%;
+
+  background: #120c09;
+  cursor: pointer;
+
+  display: grid;
+  place-items: center;
+
+  box-shadow:
+    0 18px 50px rgba(0, 0, 0, 0.42),
+    0 0 0 0 rgba(242, 138, 30, 0.28);
+
+  transition:
+    transform 0.25s ease,
+    border-color 0.25s ease,
+    box-shadow 0.25s ease;
+
+  animation: maribaChatPulse 3.8s ease-in-out infinite;
+}
+
+.mariba-chat-launcher:hover {
+  transform: translateY(-3px) scale(1.04);
+  border-color: var(--yellow);
+  box-shadow:
+    0 20px 56px rgba(0, 0, 0, 0.5),
+    0 0 0 7px rgba(242, 138, 30, 0.08);
+}
+
+.mariba-chat-launcher img {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}
+
+.mariba-chat-launcher.is-open {
+  animation: none;
+  transform: rotate(-4deg) scale(0.96);
+}
+
+@keyframes maribaChatPulse {
+  0%, 72%, 100% {
+    box-shadow:
+      0 18px 50px rgba(0, 0, 0, 0.42),
+      0 0 0 0 rgba(242, 138, 30, 0.20);
+  }
+
+  82% {
+    box-shadow:
+      0 18px 50px rgba(0, 0, 0, 0.42),
+      0 0 0 11px rgba(242, 138, 30, 0);
+  }
+}
+
+.mariba-chat-panel {
+  position: fixed;
+  right: 24px;
+  bottom: 108px;
+  z-index: 79;
+
+  width: min(390px, calc(100vw - 32px));
+  height: min(640px, calc(100svh - 150px));
+
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+
+  overflow: hidden;
+
+  border: 1px solid rgba(246, 235, 221, 0.13);
+  border-radius: 22px;
+
+  background:
+    radial-gradient(
+      circle at 84% 8%,
+      rgba(242, 138, 30, 0.12),
+      transparent 26%
+    ),
+    rgba(15, 11, 9, 0.97);
+
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+
+  box-shadow:
+    0 30px 80px rgba(0, 0, 0, 0.56);
+
+  opacity: 0;
+  transform: translateY(18px) scale(0.97);
+  transform-origin: right bottom;
+  pointer-events: none;
+
+  transition:
+    opacity 0.24s ease,
+    transform 0.24s ease;
+}
+
+.mariba-chat-panel.is-open {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+.mariba-chat-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  padding: 16px 16px 14px;
+
+  border-bottom: 1px solid rgba(246, 235, 221, 0.10);
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.025),
+      transparent
+    );
+}
+
+.mariba-chat-header-logo {
+  width: 42px;
+  height: 42px;
+
+  border-radius: 50%;
+  object-fit: cover;
+
+  border: 1px solid rgba(242, 138, 30, 0.55);
+}
+
+.mariba-chat-header-copy {
+  min-width: 0;
+  flex: 1;
+}
+
+.mariba-chat-header-copy strong {
+  display: block;
+
+  color: var(--cream);
+
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.35rem;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+}
+
+.mariba-chat-header-copy small {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+
+  color: rgba(246, 235, 221, 0.48);
+  font-size: 0.68rem;
+}
+
+.mariba-chat-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--orange);
+
+  box-shadow: 0 0 14px rgba(242, 138, 30, 0.75);
+}
+
+.mariba-chat-close {
+  width: 34px;
+  height: 34px;
+
+  border: 0;
+  border-radius: 50%;
+
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--cream);
+
+  cursor: pointer;
+
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.mariba-chat-body {
+  overflow-y: auto;
+  padding: 18px 16px 16px;
+
+  scrollbar-width: thin;
+  scrollbar-color:
+    rgba(242, 138, 30, 0.35)
+    rgba(255, 255, 255, 0.03);
+}
+
+.mariba-chat-body::-webkit-scrollbar {
+  width: 7px;
+}
+
+.mariba-chat-body::-webkit-scrollbar-thumb {
+  background: rgba(242, 138, 30, 0.28);
+  border-radius: 999px;
+}
+
+.mariba-chat-message {
+  display: flex;
+  margin-bottom: 12px;
+}
+
+.mariba-chat-message.is-user {
+  justify-content: flex-end;
+}
+
+.mariba-chat-bubble {
+  max-width: 84%;
+
+  padding: 11px 13px;
+
+  border-radius: 15px;
+
+  font-size: 0.88rem;
+  line-height: 1.55;
+
+  white-space: pre-wrap;
+}
+
+.mariba-chat-message.is-bot .mariba-chat-bubble {
+  border: 1px solid rgba(246, 235, 221, 0.09);
+  border-bottom-left-radius: 5px;
+
+  background: rgba(255, 255, 255, 0.035);
+  color: rgba(246, 235, 221, 0.82);
+}
+
+.mariba-chat-message.is-user .mariba-chat-bubble {
+  border-bottom-right-radius: 5px;
+
+  background: var(--orange);
+  color: #17100c;
+
+  font-weight: 600;
+}
+
+.mariba-chat-quick-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+
+  margin: 6px 0 18px;
+}
+
+.mariba-chat-chip {
+  border: 1px solid rgba(242, 138, 30, 0.26);
+  border-radius: 999px;
+
+  padding: 8px 11px;
+
+  background: rgba(242, 138, 30, 0.07);
+  color: rgba(246, 235, 221, 0.78);
+
+  cursor: pointer;
+
+  font-family: 'Inter', sans-serif;
+  font-size: 0.72rem;
+
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.mariba-chat-chip:hover {
+  transform: translateY(-1px);
+  background: rgba(242, 138, 30, 0.13);
+  border-color: rgba(242, 138, 30, 0.5);
+}
+
+.mariba-chat-composer {
+  padding: 12px;
+
+  border-top: 1px solid rgba(246, 235, 221, 0.10);
+
+  background: rgba(11, 8, 7, 0.86);
+}
+
+.mariba-chat-input-wrap {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 8px;
+  align-items: center;
+
+  padding: 7px;
+
+  border: 1px solid rgba(246, 235, 221, 0.11);
+  border-radius: 16px;
+
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.mariba-chat-input {
+  width: 100%;
+  min-width: 0;
+
+  padding: 8px 9px;
+
+  border: 0;
+  outline: 0;
+
+  background: transparent;
+  color: var(--cream);
+
+  font-family: 'Inter', sans-serif;
+  font-size: 0.84rem;
+}
+
+.mariba-chat-input::placeholder {
+  color: rgba(246, 235, 221, 0.34);
+}
+
+.mariba-chat-icon-button {
+  width: 38px;
+  height: 38px;
+
+  display: grid;
+  place-items: center;
+
+  border: 0;
+  border-radius: 12px;
+
+  cursor: pointer;
+
+  font-size: 1rem;
+
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease;
+}
+
+.mariba-chat-icon-button:hover {
+  transform: translateY(-1px);
+}
+
+.mariba-chat-voice {
+  background: rgba(255, 255, 255, 0.045);
+  color: var(--cream);
+}
+
+.mariba-chat-voice.is-listening {
+  background: rgba(255, 106, 26, 0.20);
+  color: var(--orange);
+  animation: maribaListening 1.2s ease-in-out infinite;
+}
+
+@keyframes maribaListening {
+  50% {
+    transform: scale(1.08);
+  }
+}
+
+.mariba-chat-send {
+  background: var(--orange);
+  color: #17100c;
+}
+
+.mariba-chat-footer-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+
+  margin-top: 8px;
+
+  color: rgba(246, 235, 221, 0.30);
+  font-size: 0.62rem;
+}
+
+.mariba-chat-sound-toggle {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: rgba(246, 235, 221, 0.48);
+  cursor: pointer;
+  font: inherit;
+}
+
+.mariba-chat-sound-toggle.is-active {
+  color: var(--orange);
+}
+
+@media (max-width: 640px) {
+  .mariba-chat-launcher {
+    right: 16px;
+    bottom: 16px;
+
+    width: 66px;
+    height: 66px;
+  }
+
+  .mariba-chat-launcher img {
+    width: 54px;
+    height: 54px;
+  }
+
+  .mariba-chat-panel {
+    right: 12px;
+    left: 12px;
+    bottom: 94px;
+
+    width: auto;
+    height: min(620px, calc(100svh - 116px));
+
+    border-radius: 20px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mariba-chat-launcher,
+  .mariba-chat-voice {
+    animation: none !important;
+  }
+}
